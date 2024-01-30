@@ -1,0 +1,40 @@
+.Highlight {
+  position: absolute;
+}
+
+.Highlight__emoji {
+  position: absolute;
+  color: black;
+  opacity: 1;
+  font-size: 28px;
+}
+
+.Highlight__parts {
+  opacity: 1;
+}
+
+.Highlight__part {
+  cursor: pointer;
+  position: absolute;
+  background: rgba(255, 226, 143, 1);
+  transition: background 0.3s;
+}
+
+.Highlight__popup {
+  /* background-color: #3d464d; */
+  /* color: white; */
+  font-size: 0.8rem;
+  background-color: #fafafa;
+  color: #2e353a;
+  box-shadow: 0 1px 5px rgba(37, 40, 43, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  max-width: 300px;
+  max-height: 100px;
+  overflow-y: scroll;
+}
+
+.Highlight--scrolledTo .Highlight__part {
+  background: #ecc787 !important;
+}

@@ -5,15 +5,26 @@
   "main": "index.js",
   "scripts": {
     "dev:crx": "pnpm --filter=./packages/crx run start",
-    "dev:website": "pnpm --filter=./packages/website run dev",
-    "test": "pnpm run test --filter packages/*"
+    "dev:website": "pnpm --filter=./packages/website run dev -p 4000",
+    "test": "pnpm --filter packages/* run test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ant-design/colors": "^7.0.2",
+    "@ant-design/icons": "^5.2.6",
+    "ant-design": "^1.0.0",
     "antd": "^5.12.4",
-    "lodash": "^4.17.21"
+    "axios": "^1.6.5",
+    "canvas": "^2.11.2",
+    "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
+    "node-gyp": "^10.0.1",
+    "pdfjs-dist": "2.16.105",
+    "raw-loader": "^4.0.2",
+    "react-rnd": "^10.4.1",
+    "styled-components": "^6.1.8"
   },
   "devDependencies": {
     "@types/node": "^20",

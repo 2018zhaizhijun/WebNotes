@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
 const nextConfig = {
     webpack: (
       config, options
@@ -8,6 +9,7 @@ const nextConfig = {
         test: /\.node/,
         use: 'raw-loader',
       });
+      config.resolve.alias['@'] = path.resolve(__dirname, 'src/app');
       return config;
     },
   };

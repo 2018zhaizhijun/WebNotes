@@ -1,3 +1,20 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib"
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "editor.formatOnSave": true,
+  "eslint.enable": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  "eslint.options": {
+    "extensions": [".js", ".jsx", ".vue", ".ts", ".tsx"]
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "vue",
+    "html",
+    "typescript",
+    "typescriptreact"
+  ]
 }

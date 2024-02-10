@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import type { IHighlight } from "./react-pdf-highlighter";
+import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { Avatar } from "antd";
 
 interface Props {
   highlights: Array<IHighlight>;
@@ -16,43 +19,57 @@ export default function Sidebar({
   toggleDocument,
   resetHighlights,
 }: Props) {
-  const [sortedHighlights, setSortedHighlights] = useState<IHighlight[]>(highlights);
+  // const [sortedHighlights, setSortedHighlights] = useState<IHighlight[]>(highlights);
+  const { data: session } = useSession();
 
-  useEffect(()=>{
-    let sorted = highlights.sort((a, b) => {
-      if (a.position.pageNumber == b.position.pageNumber) {
-        return a.position.boundingRect.y1 - b.position.boundingRect.y1;
-      }
-      else {
-        return a.position.pageNumber - b.position.pageNumber;
-      }
-    })
-    setSortedHighlights(sorted);
-  }, [highlights])
+  // useEffect(()=>{
+  //   let sorted = highlights.sort((a, b) => {
+  //     if (a.position.pageNumber == b.position.pageNumber) {
+  //       return a.position.boundingRect.y1 - b.position.boundingRect.y1;
+  //     }
+  //     else {
+  //       return a.position.pageNumber - b.position.pageNumber;
+  //     }
+  //   })
+  //   setSortedHighlights(sorted);
+  // }, [highlights])
+
+  useEffect(() => {
+    if (session) {
+      console.log("Logged info:", session);
+    }
+  }, [session]);
 
   return (
     <div className="sidebar" style={{ width: "25vw" }}>
       <div className="description" style={{ padding: "1rem" }}>
-        <h2 style={{ marginBottom: "1rem" }}>
-          react-pdf-highlighter
-        </h2>
+        <h2 style={{ marginBottom: "1rem" }}>react-pdf-highlighter</h2>
 
-        <p style={{ fontSize: "0.7rem" }}>
-          <a href="https://github.com/agentcooper/react-pdf-highlighter">
-            Open in GitHub
-          </a>
-        </p>
+        <div style={{ marginBottom: "10px" }}>
+          {session ? (
+            <>
+              <Avatar
+                shape="circle"
+                src={session.user?.image || ""}
+                style={{ marginRight: "10px" }}
+              />
+              <text>{session.user?.name || "Anonymous User"}</text>
+            </>
+          ) : (
+            <button onClick={() => signIn()}>Log in</button>
+          )}
+        </div>
 
-        <p>
+        <div>
           <small>
             To create area highlight hold ⌥ Option key (Alt), then click and
             drag.
           </small>
-        </p>
+        </div>
       </div>
 
       <ul className="sidebar__highlights">
-        {sortedHighlights.map((highlight, index) => (
+        {highlights.map((highlight, index) => (
           <li
             key={index}
             className="sidebar__highlight"
@@ -85,7 +102,7 @@ export default function Sidebar({
       <div style={{ padding: "1rem" }}>
         <button onClick={toggleDocument}>Toggle PDF document</button>
       </div>
-      {sortedHighlights.length > 0 ? (
+      {highlights.length > 0 ? (
         <div style={{ padding: "1rem" }}>
           <button onClick={resetHighlights}>Reset highlights</button>
         </div>

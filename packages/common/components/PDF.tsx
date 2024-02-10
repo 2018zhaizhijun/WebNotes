@@ -11,16 +11,17 @@ import {
 } from "./react-pdf-highlighter";
 
 import type { IHighlight, NewHighlight } from "./react-pdf-highlighter";
-
 import { testHighlights as _testHighlights } from "./test-highlights";
 import Spinner from "./Spinner";
 import Sidebar from "./Sidebar";
 import Tip from "./Tip";
 
 import "./style/PDF.css";
-import styled from 'styled-components'
+import styled from "styled-components";
 import { DeleteOutlined } from "@ant-design/icons";
+import { message } from "antd";
 
+import { queryParse, sendRequest } from "../utils/http";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -41,24 +42,28 @@ const resetHash = () => {
 const HighlightPopup = ({
   comment,
   deleteHighlight,
-  hideTip
+  hideTip,
 }: {
   comment?: { text: string };
   deleteHighlight?: () => void;
   hideTip?: () => void;
 }) => {
   return (
-      <div className="Highlight__popup">
-        {comment?.text ? <span style={{marginRight: '15px'}}>{comment.text}</span> : null}
-        <button onClick={ () => {
+    <div className="Highlight__popup">
+      {comment?.text ? (
+        <span style={{ marginRight: "15px" }}>{comment.text}</span>
+      ) : null}
+      <button
+        onClick={() => {
           deleteHighlight?.();
           hideTip?.();
-        }}>
-          <DeleteOutlined />
-        </button>
-      </div>
-    )
-}
+        }}
+      >
+        <DeleteOutlined />
+      </button>
+    </div>
+  );
+};
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
@@ -68,15 +73,19 @@ const searchParams = new URLSearchParams(document.location.search);
 const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
 export default function PDF() {
-
   const [url, setUrl] = useState<string>(initialUrl);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>(testHighlights[initialUrl]
-                                                                  ? [...testHighlights[initialUrl]]
-                                                                  : []);
-  const [scrollViewerTo, setScrollViewerTo] = useState(() => (highlight: any) => {});
+  // const [highlights, setHighlights] = useState<Array<IHighlight>>(
+  //   testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []
+  // );
+  const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
+  const [scrollViewerTo, setScrollViewerTo] = useState(
+    () => (highlight: any) => {}
+  );
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   const resetHighlights = useCallback(() => {
-    setHighlights([])
+    setHighlights([]);
   }, [setHighlights]);
 
   const toggleDocument = useCallback(() => {
@@ -87,9 +96,12 @@ export default function PDF() {
     setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
   }, [url, setUrl, setHighlights, testHighlights]);
 
-  const getHighlightById = useCallback((id: string) => {
-    return highlights.find((highlight) => highlight.id === id);
-  }, [highlights]);
+  const getHighlightById = useCallback(
+    (id: string) => {
+      return highlights.find((highlight) => highlight.id === id);
+    },
+    [highlights]
+  );
 
   const scrollToHighlightFromHash = useCallback(() => {
     const highlight = getHighlightById(parseIdFromHash());
@@ -100,18 +112,37 @@ export default function PDF() {
   }, [getHighlightById, scrollViewerTo]);
 
   useEffect(() => {
-    window.addEventListener(
-      "hashchange",
-      scrollToHighlightFromHash,
-      false
-    );
+    window.addEventListener("hashchange", scrollToHighlightFromHash, false);
   }, [scrollToHighlightFromHash]);
 
-  const addHighlight = useCallback((highlight: NewHighlight) => {
-    console.log("Saving highlight", highlight);
+  const addHighlight = useCallback(
+    (highlight: NewHighlight) => {
+      console.log("Saving highlight", highlight);
 
-    setHighlights((prevHighlights)=>[{ ...highlight, id: getNextId() }, ...prevHighlights]);
-  }, [highlights, setHighlights]);
+      setHighlights((prevHighlights) => [
+        { ...highlight, id: getNextId() },
+        ...prevHighlights,
+      ]);
+    },
+    [highlights, setHighlights]
+  );
+
+  const getHighlights = useCallback(() => {
+    return sendRequest(
+      `/api/highlight?${queryParse({ url })}`,
+      {
+        method: "GET",
+      },
+      (json: Object) => {
+        setHighlights(json as Array<IHighlight>);
+      },
+      messageApi
+    );
+  }, [sendRequest, setHighlights, messageApi]);
+
+  useEffect(() => {
+    getHighlights();
+  }, [getHighlights]);
 
   // const deleteHighlight = useCallback((id: string) => {
   //   console.log("Deleting highlight", id);
@@ -119,26 +150,53 @@ export default function PDF() {
   //   setHighlights(highlights.filter((highlight) => highlight.id !== id));
   // }, [highlights]);
 
-  const updateHighlight = useCallback((highlightId: string, position: Object, content: Object) => {
-    console.log("Updating highlight", highlightId, position, content);
+  const updateHighlight = useCallback(
+    (highlightId: string, position: Object, content: Object) => {
+      console.log("Updating highlight", highlightId, position, content);
 
-    setHighlights(highlights.map((h) => {
-      const {
-        id,
-        position: originalPosition,
-        content: originalContent,
-        ...rest
-      } = h;
-      return id === highlightId
-        ? {
-            id,
-            position: { ...originalPosition, ...position },
-            content: { ...originalContent, ...content },
-            ...rest,
-          }
-        : h;
-    }))
-  }, [highlights, setHighlights]);
+      const original = highlights.find((item, index) => {
+        return item.id === highlightId;
+      });
+
+      sendRequest(
+        `/api/highlight/${highlightId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+          body: JSON.stringify({
+            position: { ...original?.position, ...position },
+            content: { ...original?.content, ...content },
+          }),
+        },
+        async () => {
+          await getHighlights();
+        },
+        messageApi
+      );
+
+      // setHighlights(
+      //   highlights.map((h) => {
+      //     const {
+      //       id,
+      //       position: originalPosition,
+      //       content: originalContent,
+      //       ...rest
+      //     } = h;
+      //     return id === highlightId
+      //       ? {
+      //           id,
+      //           position: { ...originalPosition, ...position },
+      //           content: { ...originalContent, ...content },
+      //           ...rest,
+      //         }
+      //       : h;
+      //   })
+      // );
+    },
+    [highlights, getHighlights, sendRequest, messageApi]
+  );
 
   return (
     <div className="PDF" style={{ display: "flex", height: "100vh" }}>
@@ -163,7 +221,7 @@ export default function PDF() {
               // pdfScaleValue="page-width"
               scrollRef={(scrollTo) => {
                 // scrollViewerTo = scrollTo;
-                setScrollViewerTo(()=>scrollTo);
+                setScrollViewerTo(() => scrollTo);
 
                 scrollToHighlightFromHash();
               }}
@@ -180,11 +238,39 @@ export default function PDF() {
 
                   //   hideTipAndSelection();
                   // }}
-                  onConfirm={(color: string, comment?: {text: string} ):void => {
+                  onConfirm={async (
+                    color: string,
+                    comment?: { text: string }
+                  ) => {
                     transformSelection();
-                    addHighlight({ content, position, comment, backgroundColor: color });
-                    
-                    hideTipAndSelection();
+                    // addHighlight({
+                    //   content,
+                    //   position,
+                    //   comment,
+                    //   backgroundColor: color,
+                    // });
+
+                    sendRequest(
+                      `/api/highlight`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-type": "application/json; charset=UTF-8",
+                        },
+                        body: JSON.stringify({
+                          url,
+                          content,
+                          position,
+                          comment,
+                          backgroundColor: color,
+                        }),
+                      },
+                      async () => {
+                        hideTipAndSelection();
+                        await getHighlights();
+                      },
+                      messageApi
+                    );
                   }}
                 />
               )}
@@ -224,13 +310,30 @@ export default function PDF() {
 
                 return (
                   <Popup
-                    popupContent={<HighlightPopup 
-                      {...highlight} 
-                      deleteHighlight={() => {
-                        setHighlights(highlights.filter((item) => item.id !== highlight.id));
-                      }}
-                      hideTip={hideTip}
-                     />}
+                    popupContent={
+                      <HighlightPopup
+                        {...highlight}
+                        deleteHighlight={() => {
+                          // setHighlights(
+                          //   highlights.filter(
+                          //     (item) => item.id !== highlight.id
+                          //   )
+                          // );
+
+                          sendRequest(
+                            `/api/highlight/${highlight.id}`,
+                            {
+                              method: "DELETE",
+                            },
+                            async () => {
+                              await getHighlights();
+                            },
+                            messageApi
+                          );
+                        }}
+                        hideTip={hideTip}
+                      />
+                    }
                     onMouseOver={(popupContent) =>
                       setTip(highlight, (highlight) => popupContent)
                     }

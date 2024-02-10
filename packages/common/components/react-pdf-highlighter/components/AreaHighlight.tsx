@@ -25,7 +25,7 @@ export class AreaHighlight extends Component<Props> {
       >
         <Rnd
           className="AreaHighlight__part"
-          style={{background: highlight.backgroundColor}}
+          style={{ background: highlight.backgroundColor }}
           onDragStop={(_, data) => {
             const boundingRect: LTWHP = {
               ...highlight.position.boundingRect,

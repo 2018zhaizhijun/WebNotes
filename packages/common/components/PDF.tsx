@@ -84,21 +84,21 @@ export default function PDF() {
 
   const [messageApi, contextHolder] = message.useMessage();
 
-  const resetHighlights = useCallback(() => {
-    setHighlights([]);
-  }, [setHighlights]);
+  // const resetHighlights = useCallback(() => {
+  //   setHighlights([]);
+  // }, [setHighlights]);
 
-  const toggleDocument = useCallback(() => {
-    const newUrl =
-      url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
+  // const toggleDocument = useCallback(() => {
+  //   const newUrl =
+  //     url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
 
-    setUrl(newUrl);
-    setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
-  }, [url, setUrl, setHighlights, testHighlights]);
+  //   setUrl(newUrl);
+  //   setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
+  // }, [url, setUrl, setHighlights, testHighlights]);
 
   const getHighlightById = useCallback(
     (id: string) => {
-      return highlights.find((highlight) => highlight.id === id);
+      return highlights.find((highlight) => String(highlight.id) === id);
     },
     [highlights]
   );
@@ -109,7 +109,7 @@ export default function PDF() {
     if (highlight) {
       scrollViewerTo(highlight);
     }
-  }, [getHighlightById, scrollViewerTo]);
+  }, [getHighlightById, scrollViewerTo, parseIdFromHash]);
 
   useEffect(() => {
     window.addEventListener("hashchange", scrollToHighlightFromHash, false);
@@ -202,8 +202,8 @@ export default function PDF() {
     <div className="PDF" style={{ display: "flex", height: "100vh" }}>
       <Sidebar
         highlights={highlights}
-        resetHighlights={resetHighlights}
-        toggleDocument={toggleDocument}
+        // resetHighlights={resetHighlights}
+        // toggleDocument={toggleDocument}
       />
       <div
         style={{

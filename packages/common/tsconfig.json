@@ -14,7 +14,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noEmit": false,
-    "jsx": "react"
+    "jsx": "react",
+    "baseUrl": "."
   },
   "include": ["components", "utils"],
   "exclude": ["node_modules"]

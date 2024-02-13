@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import type { IHighlight } from "./react-pdf-highlighter";
 import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { Avatar } from "antd";
+import { EditOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import UserModal from "./UserModal";
 
 interface Props {
   highlights: Array<IHighlight>;
-  resetHighlights: () => void;
-  toggleDocument: () => void;
+  // resetHighlights: () => void;
+  // toggleDocument: () => void;
 }
 
 const updateHash = (highlight: IHighlight) => {
@@ -16,11 +18,12 @@ const updateHash = (highlight: IHighlight) => {
 
 export default function Sidebar({
   highlights,
-  toggleDocument,
-  resetHighlights,
-}: Props) {
+}: // toggleDocument,
+// resetHighlights,
+Props) {
   // const [sortedHighlights, setSortedHighlights] = useState<IHighlight[]>(highlights);
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
+  const [open, setOpen] = useState(false);
 
   // useEffect(()=>{
   //   let sorted = highlights.sort((a, b) => {
@@ -43,18 +46,29 @@ export default function Sidebar({
   return (
     <div className="sidebar" style={{ width: "25vw" }}>
       <div className="description" style={{ padding: "1rem" }}>
-        <h2 style={{ marginBottom: "1rem" }}>react-pdf-highlighter</h2>
+        <h2 style={{ marginBottom: "1rem" }}>WebNotes</h2>
 
-        <div style={{ marginBottom: "10px" }}>
+        <div
+          style={{
+            marginBottom: "10px",
+          }}
+        >
           {session ? (
-            <>
+            <div>
               <Avatar
                 shape="circle"
                 src={session.user?.image || ""}
                 style={{ marginRight: "10px" }}
               />
               <text>{session.user?.name || "Anonymous User"}</text>
-            </>
+              <button
+                onClick={() => setOpen(true)}
+                style={{ marginLeft: "20px" }}
+              >
+                <EditOutlined />
+              </button>
+              <UserModal open={open} setOpen={setOpen} onOk={() => update()} />
+            </div>
           ) : (
             <button onClick={() => signIn()}>Log in</button>
           )}
@@ -99,14 +113,14 @@ export default function Sidebar({
           </li>
         ))}
       </ul>
-      <div style={{ padding: "1rem" }}>
+      {/* <div style={{ padding: "1rem" }}>
         <button onClick={toggleDocument}>Toggle PDF document</button>
       </div>
       {highlights.length > 0 ? (
         <div style={{ padding: "1rem" }}>
           <button onClick={resetHighlights}>Reset highlights</button>
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   );
 }

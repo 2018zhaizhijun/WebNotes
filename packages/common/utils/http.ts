@@ -1,4 +1,5 @@
 import { MessageInstance } from "antd/es/message/interface";
+import { RcFile } from "antd/es/upload";
 
 export function queryParse(query: { [k: string]: string }): string {
   let queryText = "";
@@ -30,3 +31,20 @@ export async function sendRequest(
       console.log("err:", err);
     });
 }
+
+// export const getBase64 = (img: FileType, callback: (url: string) => void) => {
+//   const reader = new FileReader();
+//   reader.addEventListener("load", () => callback(reader.result as string));
+//   reader.readAsDataURL(img);
+// };
+
+export const getBase64 = (img: RcFile) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(img);
+  });
+};

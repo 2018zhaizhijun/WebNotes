@@ -1,9 +1,12 @@
 {
   "manifest_version": 3,
   "name": "WebNotes",
+  "version": "1.0.0",
   "description": "Chrome extension for WebNotes application",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
+  "host_permissions": ["http://localhost:4000/", "https://localhost:4000/"],
+  "permissions": ["activeTab", "cookies"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
@@ -16,7 +19,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "matches": ["http://*/*.pdf", "https://*/*.pdf"],
       "js": ["contentScript.bundle.js"],
       "css": ["content.styles.css"]
     }

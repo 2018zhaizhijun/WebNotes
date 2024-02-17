@@ -1,19 +1,26 @@
 import React, { useCallback, useState } from "react";
 import { Form, Input, Modal, Upload, message } from "antd";
-import { getBase64, sendRequest } from "../utils/http";
+import { API_HOST, getBase64, sendRequest } from "../utils/http";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { useSession } from "next-auth/react";
 import { UploadFile } from "antd/es/upload";
+import { Session } from "next-auth";
 
 interface UserModalProps {
   open: boolean;
   onOk: () => void;
   // onCancel: () => void;
   setOpen: (open: boolean) => void;
+  session: Session;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ open, setOpen, onOk }) => {
-  const { data: session } = useSession();
+const UserModal: React.FC<UserModalProps> = ({
+  open,
+  setOpen,
+  onOk,
+  session,
+}) => {
+  //   const { data: session } = useSession();
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([
     {
@@ -28,9 +35,9 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, onOk }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const updateUserInfo = useCallback(
-    async (image: string, name: string) => {
+    async (image: string, name: string, onOk: () => void) => {
       return sendRequest(
-        `/api/user`,
+        `${API_HOST}/api/user`,
         {
           method: "PUT",
           headers: {
@@ -41,7 +48,9 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, onOk }) => {
             name,
           }),
         },
-        (json) => {},
+        (json) => {
+          onOk?.();
+        },
         messageApi
       );
     },
@@ -54,8 +63,8 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, onOk }) => {
     form
       .validateFields()
       .then(async (values) => {
-        await updateUserInfo(fileList[0].url || "", values.name);
-        await onOk?.();
+        await updateUserInfo(fileList[0].url || "", values.name, onOk);
+        // await onOk?.();
         setOpen(false);
         setConfirmLoading(false);
       })
@@ -129,6 +138,7 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, onOk }) => {
 
   return (
     <>
+      {contextHolder}
       <Modal
         title="Edit User Info"
         open={open}

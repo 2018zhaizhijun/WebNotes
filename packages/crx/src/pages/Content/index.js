@@ -1,6 +1,9 @@
-import { printLine } from './modules/print';
+import PDF from 'common/components/PDF';
+import ReactDOM from 'react-dom';
+import React from 'react';
 
-console.log('Content script works!');
-console.log('Must reload extension for modifications to take effect.');
+// const app = document.createElement('div');
+// app.id = 'custom-app';
+// document.body.appendChild(app);
 
-printLine("Using the 'printLine' function from the Print Module");
+ReactDOM.render(<PDF />, document.body);

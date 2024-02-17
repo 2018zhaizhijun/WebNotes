@@ -1,6 +1,8 @@
 import { MessageInstance } from "antd/es/message/interface";
 import { RcFile } from "antd/es/upload";
 
+export const API_HOST = "https://localhost:4000";
+
 export function queryParse(query: { [k: string]: string }): string {
   let queryText = "";
 
@@ -18,8 +20,16 @@ export async function sendRequest(
   messageApi: MessageInstance
 ): Promise<void> {
   fetch(api, params)
-    .then((res) => res.json())
-    .then(async (json) => {
+    .then(async (res) => {
+      if (res.status == 401) {
+        messageApi.open({
+          type: "error",
+          content: "Unauthorized access detected",
+        });
+        return;
+      }
+
+      const json = await res.json();
       console.log(json);
       await onSuccess?.(json);
     })
@@ -31,12 +41,6 @@ export async function sendRequest(
       console.log("err:", err);
     });
 }
-
-// export const getBase64 = (img: FileType, callback: (url: string) => void) => {
-//   const reader = new FileReader();
-//   reader.addEventListener("load", () => callback(reader.result as string));
-//   reader.readAsDataURL(img);
-// };
 
 export const getBase64 = (img: RcFile) => {
   return new Promise((resolve, reject) => {

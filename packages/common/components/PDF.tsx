@@ -10,22 +10,17 @@ import {
   AreaHighlight,
 } from "./react-pdf-highlighter";
 
-import type { IHighlight, NewHighlight } from "./react-pdf-highlighter";
+import type { IHighlight } from "./react-pdf-highlighter";
 import { testHighlights as _testHighlights } from "./test-highlights";
 import Spinner from "./Spinner";
 import Sidebar from "./Sidebar";
 import Tip from "./Tip";
 
 import "./style/PDF.css";
-import styled from "styled-components";
 import { DeleteOutlined } from "@ant-design/icons";
 import { message } from "antd";
 
-import { queryParse, sendRequest } from "../utils/http";
-
-const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
-
-const getNextId = () => String(Math.random()).slice(2);
+import { API_HOST, queryParse, sendRequest } from "../utils/http";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -33,11 +28,6 @@ const parseIdFromHash = () =>
 const resetHash = () => {
   document.location.hash = "";
 };
-
-// const StyledButton = styled.button`
-//   position: relative;
-//   top: -4px;
-// `
 
 const HighlightPopup = ({
   comment,
@@ -66,35 +56,18 @@ const HighlightPopup = ({
 };
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
-const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 
-const searchParams = new URLSearchParams(document.location.search);
-
-const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+let href = document.location.origin + document.location.pathname;
+const initialUrl = href.slice(-4) === ".pdf" ? href : PRIMARY_PDF_URL;
 
 export default function PDF() {
   const [url, setUrl] = useState<string>(initialUrl);
-  // const [highlights, setHighlights] = useState<Array<IHighlight>>(
-  //   testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []
-  // );
   const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
   const [scrollViewerTo, setScrollViewerTo] = useState(
     () => (highlight: any) => {}
   );
 
   const [messageApi, contextHolder] = message.useMessage();
-
-  // const resetHighlights = useCallback(() => {
-  //   setHighlights([]);
-  // }, [setHighlights]);
-
-  // const toggleDocument = useCallback(() => {
-  //   const newUrl =
-  //     url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
-
-  //   setUrl(newUrl);
-  //   setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
-  // }, [url, setUrl, setHighlights, testHighlights]);
 
   const getHighlightById = useCallback(
     (id: string) => {
@@ -115,40 +88,32 @@ export default function PDF() {
     window.addEventListener("hashchange", scrollToHighlightFromHash, false);
   }, [scrollToHighlightFromHash]);
 
-  const addHighlight = useCallback(
-    (highlight: NewHighlight) => {
-      console.log("Saving highlight", highlight);
-
-      setHighlights((prevHighlights) => [
-        { ...highlight, id: getNextId() },
-        ...prevHighlights,
-      ]);
-    },
-    [highlights, setHighlights]
-  );
-
   const getHighlights = useCallback(() => {
-    return sendRequest(
-      `/api/highlight?${queryParse({ url })}`,
-      {
-        method: "GET",
-      },
-      (json: Object) => {
-        setHighlights(json as Array<IHighlight>);
-      },
-      messageApi
-    );
+    if (href.startsWith(API_HOST)) {
+      return sendRequest(
+        `${API_HOST}/api/highlight?${queryParse({ url })}`,
+        {
+          method: "GET",
+        },
+        (json: Object) => {
+          setHighlights(json as Array<IHighlight>);
+        },
+        messageApi
+      );
+    } else {
+      chrome.runtime.sendMessage(
+        { action: "GET_HIGHLIGHTS", url, messageApi },
+        function (result) {
+          console.log(result);
+          setHighlights(result.highlights as Array<IHighlight>);
+        }
+      );
+    }
   }, [sendRequest, setHighlights, messageApi]);
 
   useEffect(() => {
     getHighlights();
   }, [getHighlights]);
-
-  // const deleteHighlight = useCallback((id: string) => {
-  //   console.log("Deleting highlight", id);
-
-  //   setHighlights(highlights.filter((highlight) => highlight.id !== id));
-  // }, [highlights]);
 
   const updateHighlight = useCallback(
     (highlightId: string, position: Object, content: Object) => {
@@ -158,53 +123,48 @@ export default function PDF() {
         return item.id === highlightId;
       });
 
-      sendRequest(
-        `/api/highlight/${highlightId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
+      if (href.startsWith(API_HOST)) {
+        sendRequest(
+          `${API_HOST}/api/highlight/${highlightId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+            },
+            body: JSON.stringify({
+              position: { ...original?.position, ...position },
+              content: { ...original?.content, ...content },
+            }),
           },
-          body: JSON.stringify({
-            position: { ...original?.position, ...position },
-            content: { ...original?.content, ...content },
-          }),
-        },
-        async () => {
-          await getHighlights();
-        },
-        messageApi
-      );
-
-      // setHighlights(
-      //   highlights.map((h) => {
-      //     const {
-      //       id,
-      //       position: originalPosition,
-      //       content: originalContent,
-      //       ...rest
-      //     } = h;
-      //     return id === highlightId
-      //       ? {
-      //           id,
-      //           position: { ...originalPosition, ...position },
-      //           content: { ...originalContent, ...content },
-      //           ...rest,
-      //         }
-      //       : h;
-      //   })
-      // );
+          async () => {
+            await getHighlights();
+          },
+          messageApi
+        );
+      } else {
+        chrome.runtime.sendMessage(
+          {
+            action: "UPDATE_HIGHLIGHT",
+            highlightId,
+            messageApi,
+            body: JSON.stringify({
+              position: { ...original?.position, ...position },
+              content: { ...original?.content, ...content },
+            }),
+          },
+          function () {
+            getHighlights();
+          }
+        );
+      }
     },
     [highlights, getHighlights, sendRequest, messageApi]
   );
 
   return (
     <div className="PDF" style={{ display: "flex", height: "100vh" }}>
-      <Sidebar
-        highlights={highlights}
-        // resetHighlights={resetHighlights}
-        // toggleDocument={toggleDocument}
-      />
+      {contextHolder}
+      <Sidebar highlights={highlights} />
       <div
         style={{
           height: "100vh",
@@ -220,7 +180,6 @@ export default function PDF() {
               onScrollChange={resetHash}
               // pdfScaleValue="page-width"
               scrollRef={(scrollTo) => {
-                // scrollViewerTo = scrollTo;
                 setScrollViewerTo(() => scrollTo);
 
                 scrollToHighlightFromHash();
@@ -232,45 +191,53 @@ export default function PDF() {
                 transformSelection
               ) => (
                 <Tip
-                  // onOpen={transformSelection}
-                  // onConfirm={(comment) => {
-                  //   this.addHighlight({ content, position, comment });
-
-                  //   hideTipAndSelection();
-                  // }}
                   onConfirm={async (
                     color: string,
                     comment?: { text: string }
                   ) => {
                     transformSelection();
-                    // addHighlight({
-                    //   content,
-                    //   position,
-                    //   comment,
-                    //   backgroundColor: color,
-                    // });
 
-                    sendRequest(
-                      `/api/highlight`,
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-type": "application/json; charset=UTF-8",
+                    if (href.startsWith(API_HOST)) {
+                      sendRequest(
+                        `${API_HOST}/api/highlight`,
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-type": "application/json; charset=UTF-8",
+                          },
+                          body: JSON.stringify({
+                            url,
+                            content,
+                            position,
+                            comment,
+                            backgroundColor: color,
+                          }),
                         },
-                        body: JSON.stringify({
-                          url,
-                          content,
-                          position,
-                          comment,
-                          backgroundColor: color,
-                        }),
-                      },
-                      async () => {
-                        hideTipAndSelection();
-                        await getHighlights();
-                      },
-                      messageApi
-                    );
+                        async () => {
+                          hideTipAndSelection();
+                          await getHighlights();
+                        },
+                        messageApi
+                      );
+                    } else {
+                      chrome.runtime.sendMessage(
+                        {
+                          action: "CREATE_HIGHLIGHT",
+                          messageApi,
+                          body: JSON.stringify({
+                            url,
+                            content,
+                            position,
+                            comment,
+                            backgroundColor: color,
+                          }),
+                        },
+                        function () {
+                          hideTipAndSelection();
+                          getHighlights();
+                        }
+                      );
+                    }
                   }}
                 />
               )}
@@ -314,22 +281,29 @@ export default function PDF() {
                       <HighlightPopup
                         {...highlight}
                         deleteHighlight={() => {
-                          // setHighlights(
-                          //   highlights.filter(
-                          //     (item) => item.id !== highlight.id
-                          //   )
-                          // );
-
-                          sendRequest(
-                            `/api/highlight/${highlight.id}`,
-                            {
-                              method: "DELETE",
-                            },
-                            async () => {
-                              await getHighlights();
-                            },
-                            messageApi
-                          );
+                          if (href.startsWith(API_HOST)) {
+                            sendRequest(
+                              `${API_HOST}/api/highlight/${highlight.id}`,
+                              {
+                                method: "DELETE",
+                              },
+                              async () => {
+                                await getHighlights();
+                              },
+                              messageApi
+                            );
+                          } else {
+                            chrome.runtime.sendMessage(
+                              {
+                                action: "DELETE_HIGHLIGHT",
+                                highlightId: highlight.id,
+                                messageApi,
+                              },
+                              () => {
+                                getHighlights();
+                              }
+                            );
+                          }
                         }}
                         hideTip={hideTip}
                       />

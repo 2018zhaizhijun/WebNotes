@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
 
   let query = db.selectFrom("Highlight");
 
+  // TODO: 未登录时默认显示为空，点击悬浮按钮后才查询所有人的公开highlight
   if (userId) {
     query = query.where("authorId", "=", userId); // Kysely is immutable, you must re-assign!
   } else {

@@ -31,16 +31,18 @@ var server = new WebpackDevServer(
     hot: true,
     liveReload: false,
     client: {
-      webSocketTransport: 'sockjs',
+      // webSocketTransport: 'sockjs',
+      webSocketTransport: 'ws', // fix error 'SecurityError: An insecure SockJS connection may not be initiated from a page loaded over HTTPS'
     },
-    webSocketServer: 'sockjs',
+    // webSocketServer: 'sockjs',
+    webSocketServer: 'ws', // fix error 'SecurityError: An insecure SockJS connection may not be initiated from a page loaded over HTTPS'
     host: 'localhost',
     port: env.PORT,
     static: {
       directory: path.join(__dirname, '../build'),
     },
     devMiddleware: {
-      publicPath: `http://localhost:${env.PORT}/`,
+      publicPath: `https://localhost:${env.PORT}/`,
       writeToDisk: true,
     },
     headers: {

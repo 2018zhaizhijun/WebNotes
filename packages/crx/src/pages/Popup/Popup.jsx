@@ -1,51 +1,95 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import logo from '../../assets/img/logo.svg';
-import Greetings from '../../containers/Greetings/Greetings';
 import './Popup.css';
-import TestComp from 'common/components/TestComp';
-import axios from 'axios';
-import { Button } from 'antd';
+import { Avatar, Popconfirm } from 'antd';
+import UserModal from 'common/components/UserModal';
+import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
+import { API_HOST } from 'common/utils/http';
 
 const Popup = () => {
-  const [text, setText] = React.useState('test');
+  const [session, setSession] = useState(null);
+  const [open, setOpen] = useState(false);
 
-  const clickHandler = () => {
-    axios.get('http://localhost:4000/api/user')
-        .then(res => {
-          console.log(res)
-          setText(res.data?.name);
-        }, err => {})
-        .catch(function(error){
-          if(error.response){
-            //请求已经发出，但是服务器响应返回的状态吗不在2xx的范围内,可根据不同错误码进行错误处理
-            console.log(error.response.data);
-            console.log(error.response.status);
-            console.log(error.response.header);
-          }else {
-            //一些错误是在设置请求的时候触发
-            console.log('Error',error.message);
-          }
-          console.log(error.config);
-        });
-  }
+  const getSession = useCallback(() => {
+    chrome.runtime.sendMessage({ action: 'AUTH_CHECK' }, (sessionInfo) => {
+      if (sessionInfo) {
+        setSession(sessionInfo);
+      } else {
+        //no session means user not logged in
+      }
+    });
+  }, [setSession]);
+
+  useEffect(() => {
+    getSession();
+  }, [getSession]);
+
+  const logOut = useCallback(() => {
+    chrome.runtime.sendMessage({ action: 'LOG_OUT' }, () => {
+      setSession(null);
+    });
+  }, []);
 
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/pages/Popup/Popup.jsx</code> and save to reload.
-        </p>
-        <a
+        <div>
+          <img src={logo} className="App-logo" alt="logo" />
+          {/* <a
           className="App-link"
           href="https://reactjs.org"
           target="_blank"
           rel="noopener noreferrer"
         >
           Learn React!
-        </a>
-        <TestComp />
-        <Button onClick={clickHandler}>{text}</Button>
+        </a> */}
+          <div>WebNotes</div>
+        </div>
+        {session ? (
+          <div>
+            <Avatar
+              shape="circle"
+              src={session.user?.image || ''}
+              style={{ marginRight: '10px' }}
+            />
+            <text>{session.user?.name || 'Anonymous User'}</text>
+            <button
+              onClick={() => setOpen(true)}
+              style={{ marginLeft: '20px' }}
+            >
+              <EditOutlined />
+            </button>
+
+            <Popconfirm
+              title=""
+              description="Are you sure to logout?"
+              onConfirm={() => logOut()}
+              okText="Yes"
+              cancelText="No"
+            >
+              <button>
+                <LogoutOutlined />
+              </button>
+            </Popconfirm>
+
+            <UserModal
+              open={open}
+              setOpen={setOpen}
+              onOk={() => getSession()}
+              session={session}
+            />
+          </div>
+        ) : (
+          <button
+            onClick={() => {
+              chrome.tabs.create({
+                url: `${API_HOST}/login`,
+              });
+            }}
+          >
+            Log in
+          </button>
+        )}
       </header>
     </div>
   );

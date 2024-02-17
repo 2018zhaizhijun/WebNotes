@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev:crx": "pnpm --filter=./packages/crx run start",
-    "dev:website": "pnpm --filter=./packages/website run dev -p 4000",
+    "dev:website": "pnpm --filter=./packages/website run dev -p 4000 --experimental-https",
     "test": "pnpm --filter packages/* run test"
   },
   "keywords": [],
@@ -37,6 +37,8 @@
     "vercel": "^33.3.0"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.202",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",
     "@types/pg": "^8.11.0",
     "prisma": "^5.8.1",

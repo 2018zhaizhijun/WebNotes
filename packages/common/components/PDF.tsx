@@ -60,7 +60,7 @@ const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 let href = document.location.origin + document.location.pathname;
 const initialUrl = href.slice(-4) === ".pdf" ? href : PRIMARY_PDF_URL;
 
-export default function PDF() {
+const PDF: React.FC = () => {
   const [url, setUrl] = useState<string>(initialUrl);
   const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
   const [scrollViewerTo, setScrollViewerTo] = useState(
@@ -324,4 +324,6 @@ export default function PDF() {
       </div>
     </div>
   );
-}
+};
+
+export default PDF;

@@ -5,10 +5,11 @@ import { Avatar, Popconfirm } from 'antd';
 import UserModal from 'common/components/UserModal';
 import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
 import { API_HOST } from 'common/utils/http';
+import { Session } from 'next-auth';
 
-const Popup = () => {
-  const [session, setSession] = useState(null);
-  const [open, setOpen] = useState(false);
+const Popup: React.FC = () => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [open, setOpen] = useState<boolean>(false);
 
   const getSession = useCallback(() => {
     chrome.runtime.sendMessage({ action: 'AUTH_CHECK' }, (sessionInfo) => {

@@ -73,3 +73,7 @@ blockquote:after {
 .ant-btn-primary {
   background: #1677ff;
 }
+
+.favourite-form .ant-form-item {
+  margin-bottom: 8px;
+}

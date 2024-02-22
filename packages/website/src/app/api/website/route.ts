@@ -6,42 +6,43 @@ import { HTTP_CODE, responseFail, toObject } from "@/lib/httpcode";
 import db from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  const url = req.nextUrl.searchParams.get("url");
+  console.log("Get website info of " + url);
+
+  //   const session = await getServerSession(authOptions);
+  //   const userId = session?.user?.id;
 
   // validation session
-  if (!userId) {
-    return responseFail(HTTP_CODE.NOT_LOGGED);
-  }
+  // if (!userId) {
+  //   return responseFail(HTTP_CODE.NOT_LOGGED);
+  // }
 
   let result = await db
-    .selectFrom("User")
-    .where("id", "=", userId)
+    .selectFrom("Website")
+    .where("url", "=", url)
     .selectAll()
     .executeTakeFirst();
 
   return Response.json(result);
 }
 
-export async function PUT(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const request = await req.json();
-  console.log("Update userinfo: ");
   console.log(request);
 
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  //   const session = await getServerSession(authOptions);
+  //   const userId = session?.user?.id;
 
-  // validation session
-  if (!userId) {
-    return responseFail(HTTP_CODE.NOT_LOGGED);
-  }
+  //   // validation session
+  //   if (!userId) {
+  //     return responseFail(HTTP_CODE.NOT_LOGGED);
+  //   }
 
   const result = await db
-    .updateTable("User")
-    .set({
+    .insertInto("Website")
+    .values({
       ...request,
     })
-    .where("id", "=", userId)
     .executeTakeFirst();
 
   return Response.json(toObject(result));

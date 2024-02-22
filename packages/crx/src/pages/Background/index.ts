@@ -58,11 +58,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       {
         method: 'GET',
       },
-      (json) => {
-        onSuccess({ highlights: json });
-      },
       request.messageApi
-    );
+    ).then((json) => {
+      onSuccess({ highlights: json });
+    });
     return true;
   } else if (request.action === 'UPDATE_HIGHLIGHT') {
     sendRequest(
@@ -74,11 +73,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
         },
         body: request.body,
       },
-      (res) => {
-        onSuccess(res);
-      },
       request.messageApi
-    );
+    ).then((res) => {
+      onSuccess(res);
+    });
     return true;
   } else if (request.action === 'CREATE_HIGHLIGHT') {
     sendRequest(
@@ -90,11 +88,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
         },
         body: request.body,
       },
-      (res) => {
-        onSuccess(res);
-      },
       request.messageApi
-    );
+    ).then((res) => {
+      onSuccess(res);
+    });
     return true;
   } else if (request.action === 'DELETE_HIGHLIGHT') {
     sendRequest(
@@ -102,11 +99,81 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       {
         method: 'DELETE',
       },
-      (res) => {
-        onSuccess(res);
+      request.messageApi
+    ).then((res) => {
+      onSuccess(res);
+    });
+    return true;
+  } else if (request.action === 'GET_WEBSITE_INFO') {
+    // 查询Website表中是否有该网站
+    sendRequest(
+      `${API_HOST}/api/website?${queryParse({ url: request.url })}`,
+      {
+        method: 'GET',
       },
       request.messageApi
-    );
+    ).then((json) => {
+      onSuccess({ websiteInfo: json });
+    });
+    return true;
+  } else if (request.action === 'CREATE_WEBSITE_INFO') {
+    sendRequest(
+      `${API_HOST}/api/website`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+        // TODO: 提取PDF的title和abstract
+        body: request.body,
+      },
+      request.messageApi
+    ).then((res) => {
+      onSuccess(res);
+    });
+    return true;
+  } else if (request.action === 'GET_FAVOURITE_WEBSITE_INFO') {
+    sendRequest(
+      `${API_HOST}/api/favourite/website?${queryParse({
+        url: request.url,
+      })}`,
+      {
+        method: 'GET',
+      },
+      request.messageApi
+    ).then((json) => {
+      onSuccess({ favouriteInfo: json });
+    });
+    return true;
+  } else if (request.action === 'UPDATE_FAVOURITE_WEBSITE_INFO') {
+    sendRequest(
+      `${API_HOST}/api/favourite/website?${queryParse({
+        url: request.url,
+      })}`,
+      {
+        method: request.isCreate ? 'POST' : 'PUT',
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+        body: request.body,
+      },
+      request.messageApi
+    ).then((res) => {
+      onSuccess(res);
+    });
+    return true;
+  } else if (request.action === 'DELETE_FAVOURITE_WEBSITE_INFO') {
+    sendRequest(
+      `${API_HOST}/api/favourite/website?${queryParse({
+        url: request.url,
+      })}`,
+      {
+        method: 'DELETE',
+      },
+      request.messageApi
+    ).then((res) => {
+      onSuccess(res);
+    });
     return true;
   }
 });

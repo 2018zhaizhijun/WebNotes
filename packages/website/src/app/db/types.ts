@@ -18,6 +18,23 @@ export type Account = {
     id_token: string | null;
     session_state: string | null;
 };
+export type FavoriteNote = {
+    userId: string;
+    websiteUrl: string;
+    noteRename: string;
+    tag: string;
+    followerId: string;
+};
+export type FavoriteUser = {
+    userId: string;
+    followerId: string;
+};
+export type FavoriteWebsite = {
+    websiteUrl: string;
+    websiteRename: string;
+    tag: string;
+    followerId: string;
+};
 export type Highlight = {
     id: Generated<number>;
     url: string;
@@ -47,10 +64,19 @@ export type VerificationToken = {
     token: string;
     expires: Timestamp;
 };
+export type Website = {
+    url: string;
+    title: string | null;
+    abstract: string | null;
+};
 export type DB = {
     Account: Account;
+    FavoriteNote: FavoriteNote;
+    FavoriteUser: FavoriteUser;
+    FavoriteWebsite: FavoriteWebsite;
     Highlight: Highlight;
     Session: Session;
     User: User;
     VerificationToken: VerificationToken;
+    Website: Website;
 };

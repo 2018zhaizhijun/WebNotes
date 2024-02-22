@@ -16,10 +16,10 @@ export function queryParse(query: { [k: string]: string }): string {
 export async function sendRequest(
   api: string,
   params: Object,
-  onSuccess: (json: Object) => void,
+  // onSuccess: (json: Object) => void,
   messageApi: MessageInstance
-): Promise<void> {
-  fetch(api, params)
+): Promise<any> {
+  return fetch(api, params)
     .then(async (res) => {
       if (res.status == 401) {
         messageApi.open({
@@ -31,14 +31,15 @@ export async function sendRequest(
 
       const json = await res.json();
       console.log(json);
-      await onSuccess?.(json);
+      // await onSuccess?.(json);
+      return json;
     })
     .catch((err) => {
+      console.log("err:", err);
       messageApi.open({
         type: "error",
         content: err.message,
       });
-      console.log("err:", err);
     });
 }
 

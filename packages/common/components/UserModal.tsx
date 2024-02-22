@@ -14,6 +14,10 @@ interface UserModalProps {
   session: Session;
 }
 
+interface UserFormValues {
+  name: string;
+}
+
 const UserModal: React.FC<UserModalProps> = ({
   open,
   setOpen,
@@ -21,7 +25,7 @@ const UserModal: React.FC<UserModalProps> = ({
   session,
 }) => {
   //   const { data: session } = useSession();
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<UserFormValues>();
   const [fileList, setFileList] = useState<UploadFile[]>([
     {
       uid: "",
@@ -48,11 +52,10 @@ const UserModal: React.FC<UserModalProps> = ({
             name,
           }),
         },
-        (json) => {
-          onOk?.();
-        },
         messageApi
-      );
+      ).then((json) => {
+        onOk?.();
+      });
     },
     [sendRequest, messageApi]
   );

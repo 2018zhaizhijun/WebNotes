@@ -55,13 +55,10 @@ const HighlightPopup = ({
   );
 };
 
-const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
+const href = document.location.href;
 
-let href = document.location.origin + document.location.pathname;
-const initialUrl = href.slice(-4) === ".pdf" ? href : PRIMARY_PDF_URL;
-
-const PDF: React.FC = () => {
-  const [url, setUrl] = useState<string>(initialUrl);
+const PDF: React.FC<{ url: string }> = ({ url }) => {
+  // const [url, setUrl] = useState<string>(initialUrl);
   const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
   const [scrollViewerTo, setScrollViewerTo] = useState(
     () => (highlight: any) => {}
@@ -95,11 +92,10 @@ const PDF: React.FC = () => {
         {
           method: "GET",
         },
-        (json: Object) => {
-          setHighlights(json as Array<IHighlight>);
-        },
         messageApi
-      );
+      ).then((json: Object) => {
+        setHighlights(json as Array<IHighlight>);
+      });
     } else {
       chrome.runtime.sendMessage(
         { action: "GET_HIGHLIGHTS", url, messageApi },
@@ -136,11 +132,10 @@ const PDF: React.FC = () => {
               content: { ...original?.content, ...content },
             }),
           },
-          async () => {
-            await getHighlights();
-          },
           messageApi
-        );
+        ).then(async () => {
+          await getHighlights();
+        });
       } else {
         chrome.runtime.sendMessage(
           {
@@ -164,7 +159,7 @@ const PDF: React.FC = () => {
   return (
     <div className="PDF" style={{ display: "flex", height: "100vh" }}>
       {contextHolder}
-      <Sidebar highlights={highlights} />
+      <Sidebar highlights={highlights} url={url} />
       <div
         style={{
           height: "100vh",
@@ -213,12 +208,11 @@ const PDF: React.FC = () => {
                             backgroundColor: color,
                           }),
                         },
-                        async () => {
-                          hideTipAndSelection();
-                          await getHighlights();
-                        },
                         messageApi
-                      );
+                      ).then(async () => {
+                        hideTipAndSelection();
+                        await getHighlights();
+                      });
                     } else {
                       chrome.runtime.sendMessage(
                         {
@@ -287,11 +281,10 @@ const PDF: React.FC = () => {
                               {
                                 method: "DELETE",
                               },
-                              async () => {
-                                await getHighlights();
-                              },
                               messageApi
-                            );
+                            ).then(async () => {
+                              await getHighlights();
+                            });
                           } else {
                             chrome.runtime.sendMessage(
                               {

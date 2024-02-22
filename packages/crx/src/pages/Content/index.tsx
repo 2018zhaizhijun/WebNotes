@@ -6,4 +6,6 @@ import React from 'react';
 // app.id = 'custom-app';
 // document.body.appendChild(app);
 
-ReactDOM.render(<PDF />, document.body);
+let href = document.location.origin + document.location.pathname;
+
+ReactDOM.render(<PDF url={href} />, document.body);

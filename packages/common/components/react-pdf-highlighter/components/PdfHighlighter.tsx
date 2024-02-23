@@ -396,7 +396,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
     this.setState(
       {
-        scrolledToHighlightId: highlight.id,
+        scrolledToHighlightId: String(highlight.id),
       },
       () => this.renderHighlightLayers()
     );

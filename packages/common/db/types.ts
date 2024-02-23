@@ -18,18 +18,18 @@ export type Account = {
     id_token: string | null;
     session_state: string | null;
 };
-export type FavoriteNote = {
+export type FavouriteNote = {
     userId: string;
     websiteUrl: string;
     noteRename: string;
     tag: string;
     followerId: string;
 };
-export type FavoriteUser = {
+export type FavouriteUser = {
     userId: string;
     followerId: string;
 };
-export type FavoriteWebsite = {
+export type FavouriteWebsite = {
     websiteUrl: string;
     websiteRename: string;
     tag: string;
@@ -71,9 +71,9 @@ export type Website = {
 };
 export type DB = {
     Account: Account;
-    FavoriteNote: FavoriteNote;
-    FavoriteUser: FavoriteUser;
-    FavoriteWebsite: FavoriteWebsite;
+    FavouriteNote: FavouriteNote;
+    FavouriteUser: FavouriteUser;
+    FavouriteWebsite: FavouriteWebsite;
     Highlight: Highlight;
     Session: Session;
     User: User;

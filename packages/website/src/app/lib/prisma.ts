@@ -1,7 +1,7 @@
 // import { PrismaClient } from '@prisma/client';
 import { Pool } from "pg";
 import { PostgresDialect } from "kysely";
-import { DB } from "@/db/types";
+import { DB } from "common/db/types";
 import { KyselyAuth } from "@auth/kysely-adapter";
 
 // let prisma: PrismaClient;

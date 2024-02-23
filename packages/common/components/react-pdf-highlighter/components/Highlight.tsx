@@ -13,9 +13,6 @@ interface Props {
   onMouseOver?: () => void;
   onMouseOut?: () => void;
   deleteHighlight?: (id: string) => void;
-  comment?: {
-    text: string;
-  };
   backgroundColor?: string;
   isScrolledTo: boolean;
 }
@@ -28,8 +25,7 @@ export class Highlight extends Component<Props> {
       onMouseOver,
       onMouseOut,
       deleteHighlight,
-      comment,
-      backgroundColor='#ffe28f',
+      backgroundColor = "#ffe28f",
       isScrolledTo,
     } = this.props;
 
@@ -39,17 +35,6 @@ export class Highlight extends Component<Props> {
       <div
         className={`Highlight ${isScrolledTo ? "Highlight--scrolledTo" : ""}`}
       >
-        {/* {comment ? (
-          <div
-            className="Highlight__emoji"
-            style={{
-              left: 20,
-              top: boundingRect.top,
-            }}
-          >
-            {comment.emoji}
-          </div>
-        ) : null} */}
         <div className="Highlight__parts">
           {rects.map((rect, index) => (
             <div
@@ -57,7 +42,7 @@ export class Highlight extends Component<Props> {
               onMouseOut={onMouseOut}
               onClick={onClick}
               key={index}
-              style={{...rect, background: backgroundColor}}
+              style={{ ...rect, background: backgroundColor }}
               className={`Highlight__part`}
             />
           ))}

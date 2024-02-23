@@ -10,7 +10,6 @@ import {
   AreaHighlight,
 } from "./react-pdf-highlighter";
 
-import type { IHighlight } from "./react-pdf-highlighter";
 import { testHighlights as _testHighlights } from "./test-highlights";
 import Spinner from "./Spinner";
 import Sidebar from "./Sidebar";
@@ -21,6 +20,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { message } from "antd";
 
 import { API_HOST, queryParse, sendRequest } from "../utils/http";
+import { HighlightType } from "../db/prisma-json";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -34,7 +34,7 @@ const HighlightPopup = ({
   deleteHighlight,
   hideTip,
 }: {
-  comment?: { text: string };
+  comment?: { text: string } | null;
   deleteHighlight?: () => void;
   hideTip?: () => void;
 }) => {
@@ -59,7 +59,7 @@ const href = document.location.href;
 
 const PDF: React.FC<{ url: string }> = ({ url }) => {
   // const [url, setUrl] = useState<string>(initialUrl);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>([]);
+  const [highlights, setHighlights] = useState<HighlightType[]>([]);
   const [scrollViewerTo, setScrollViewerTo] = useState(
     () => (highlight: any) => {}
   );
@@ -87,21 +87,21 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
 
   const getHighlights = useCallback(() => {
     if (href.startsWith(API_HOST)) {
-      return sendRequest(
+      return sendRequest<HighlightType[]>(
         `${API_HOST}/api/highlight?${queryParse({ url })}`,
         {
           method: "GET",
         },
         messageApi
-      ).then((json: Object) => {
-        setHighlights(json as Array<IHighlight>);
+      ).then((json) => {
+        setHighlights(json);
       });
     } else {
       chrome.runtime.sendMessage(
         { action: "GET_HIGHLIGHTS", url, messageApi },
-        function (result) {
+        function (result: HighlightType[]) {
           console.log(result);
-          setHighlights(result.highlights as Array<IHighlight>);
+          setHighlights(result);
         }
       );
     }
@@ -116,7 +116,7 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
       console.log("Updating highlight", highlightId, position, content);
 
       const original = highlights.find((item, index) => {
-        return item.id === highlightId;
+        return String(item.id) === highlightId;
       });
 
       if (href.startsWith(API_HOST)) {
@@ -252,8 +252,7 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
                   <Highlight
                     isScrolledTo={isScrolledTo}
                     position={highlight.position}
-                    comment={highlight.comment}
-                    backgroundColor={highlight.backgroundColor}
+                    backgroundColor={highlight.backgroundColor || undefined}
                   />
                 ) : (
                   <AreaHighlight
@@ -261,7 +260,7 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
                     highlight={highlight}
                     onChange={(boundingRect) => {
                       updateHighlight(
-                        highlight.id,
+                        String(highlight.id),
                         { boundingRect: viewportToScaled(boundingRect) },
                         { image: screenshot(boundingRect) }
                       );

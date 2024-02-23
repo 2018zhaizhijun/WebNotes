@@ -42,7 +42,7 @@ export interface Content {
 
 export interface HighlightContent {
   content: Content;
-  backgroundColor?: string;
+  backgroundColor?: string | null;
 }
 
 export interface Comment {
@@ -50,7 +50,7 @@ export interface Comment {
 }
 
 export interface HighlightComment {
-  comment?: Comment;
+  comment?: Comment | null;
 }
 
 export interface NewHighlight extends HighlightContent, HighlightComment {
@@ -58,7 +58,7 @@ export interface NewHighlight extends HighlightContent, HighlightComment {
 }
 
 export interface IHighlight extends NewHighlight {
-  id: string;
+  id: string | number;
 }
 
 export interface ViewportHighlight extends HighlightContent, HighlightComment {

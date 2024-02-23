@@ -5,21 +5,22 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type { IHighlight } from "./react-pdf-highlighter";
 import { API_HOST } from "../utils/http";
 import { Form, Popconfirm, message } from "antd";
 import Icon, {
   CustomIconComponentProps,
 } from "@ant-design/icons/lib/components/Icon";
 import FavouriteForm, { FavouriteFormValues } from "./FavouriteForm";
+import { HighlightType } from "db/prisma-json";
+import { FavouriteWebsite, Website } from "db/types";
 const UserInfo = React.lazy(() => import("./UserInfo"));
 
 interface SidebarProps {
-  highlights: Array<IHighlight>;
+  highlights: HighlightType[];
   url: string;
 }
 
-const updateHash = (highlight: IHighlight) => {
+const updateHash = (highlight: HighlightType) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
@@ -43,18 +44,11 @@ const FavouriteIcon = (props: Partial<CustomIconComponentProps>) => (
 );
 
 const Sidebar: React.FC<SidebarProps> = ({ highlights, url }) => {
-  // const [sortedHighlights, setSortedHighlights] = useState<IHighlight[]>(highlights);
-  const [websiteInfo, setWebsiteInfo] = useState<{
-    url: string;
-    title?: string;
-    abstract?: string;
-  } | null>(null);
-  const [favouriteInfo, setFavouriteInfo] = useState<{
-    websiteUrl: string;
-    websiteRename: string;
-    tag: string;
-    follower: string;
-  } | null>(null);
+  // const [sortedHighlights, setSortedHighlights] = useState<HighlightType[]>(highlights);
+  const [websiteInfo, setWebsiteInfo] = useState<Website | null>(null);
+  const [favouriteInfo, setFavouriteInfo] = useState<FavouriteWebsite | null>(
+    null
+  );
   const [messageApi, contextHolder] = message.useMessage();
 
   const [form] = Form.useForm<FavouriteFormValues>();
@@ -80,10 +74,10 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url }) => {
       if (!document.location.href.startsWith(API_HOST) && url) {
         chrome.runtime.sendMessage(
           { action: "GET_WEBSITE_INFO", url, messageApi },
-          function (result) {
+          function (result: Website) {
             console.log(result);
-            if (result.websiteInfo.url) {
-              setWebsiteInfo(result.websiteInfo);
+            if (result.url) {
+              setWebsiteInfo(result);
             } else {
               onEmpty?.();
             }
@@ -115,10 +109,10 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url }) => {
     if (!document.location.href.startsWith(API_HOST) && url) {
       chrome.runtime.sendMessage(
         { action: "GET_FAVOURITE_WEBSITE_INFO", url, messageApi },
-        function (result) {
+        function (result: FavouriteWebsite[]) {
           console.log(result);
-          if (result.favouriteInfo.length > 0) {
-            setFavouriteInfo(result.favouriteInfo[0]);
+          if (result.length > 0) {
+            setFavouriteInfo(result[0]);
           }
         }
       );

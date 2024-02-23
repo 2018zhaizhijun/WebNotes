@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   let query = db
-    .selectFrom("FavoriteUser")
+    .selectFrom("FavouriteUser")
     .where("followerId", "=", followerId);
 
   if (userId) {
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   const result = await db
-    .insertInto("FavoriteUser")
+    .insertInto("FavouriteUser")
     .values({
       ...request,
       followerId: followerId.toString(),
@@ -68,7 +68,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const result = await db
-    .updateTable("FavoriteUser")
+    .updateTable("FavouriteUser")
     .set({
       ...request,
     })
@@ -92,7 +92,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   const result = await db
-    .deleteFrom("FavoriteUser")
+    .deleteFrom("FavouriteUser")
     .where("followerId", "=", followerId)
     .where("userId", "=", userId)
     .executeTakeFirst();

@@ -13,12 +13,12 @@ export function queryParse(query: { [k: string]: string }): string {
   return queryText.slice(0, -1);
 }
 
-export async function sendRequest(
+export async function sendRequest<T>(
   api: string,
   params: Object,
   // onSuccess: (json: Object) => void,
   messageApi: MessageInstance
-): Promise<any> {
+): Promise<T> {
   return fetch(api, params)
     .then(async (res) => {
       if (res.status == 401) {

@@ -21,6 +21,7 @@ import { message } from "antd";
 
 import { API_HOST, queryParse, sendRequest } from "../utils/http";
 import { HighlightType } from "../db/prisma-json";
+import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -63,6 +64,7 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
   const [scrollViewerTo, setScrollViewerTo] = useState(
     () => (highlight: any) => {}
   );
+  const [pdfDocument, setPdfDocument] = useState<PDFDocumentProxy | null>(null);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -159,7 +161,7 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
   return (
     <div className="PDF" style={{ display: "flex", height: "100vh" }}>
       {contextHolder}
-      <Sidebar highlights={highlights} url={url} />
+      <Sidebar highlights={highlights} url={url} pdfDocument={pdfDocument} />
       <div
         style={{
           height: "100vh",
@@ -167,8 +169,13 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
           position: "relative",
         }}
       >
-        <PdfLoader url={url} beforeLoad={<Spinner />}>
-          {(pdfDocument) => (
+        <PdfLoader
+          url={url}
+          beforeLoad={<Spinner />}
+          pdfDocument={pdfDocument}
+          setPdfDocument={setPdfDocument}
+        >
+          {pdfDocument ? (
             <PdfHighlighter
               pdfDocument={pdfDocument}
               enableAreaSelection={(event: MouseEvent) => event.altKey}
@@ -311,6 +318,8 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
               }}
               highlights={highlights}
             />
+          ) : (
+            <></>
           )}
         </PdfLoader>
       </div>

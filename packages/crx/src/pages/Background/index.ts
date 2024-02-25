@@ -94,7 +94,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'GET_WEBSITE_INFO') {
     // 查询Website表中是否有该网站
-    sendRequest<Website>(
+    sendRequest<Website[]>(
       `${API_HOST}/api/website?${queryParse({ url: request.url })}`,
       {
         method: 'GET',
@@ -112,7 +112,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
         },
-        // TODO: 提取PDF的title和abstract
         body: request.body,
       },
       request.messageApi

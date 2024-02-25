@@ -13,11 +13,14 @@ import Icon, {
 import FavouriteForm, { FavouriteFormValues } from "./FavouriteForm";
 import { HighlightType } from "db/prisma-json";
 import { FavouriteWebsite, Website } from "db/types";
+import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
+import { extractInfo } from "../utils/pdf-extractor";
 const UserInfo = React.lazy(() => import("./UserInfo"));
 
 interface SidebarProps {
   highlights: HighlightType[];
   url: string;
+  pdfDocument: PDFDocumentProxy | null;
 }
 
 const updateHash = (highlight: HighlightType) => {
@@ -43,7 +46,7 @@ const FavouriteIcon = (props: Partial<CustomIconComponentProps>) => (
   <Icon component={FavouriteSvg} {...props} />
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ highlights, url }) => {
+const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
   // const [sortedHighlights, setSortedHighlights] = useState<HighlightType[]>(highlights);
   const [websiteInfo, setWebsiteInfo] = useState<Website | null>(null);
   const [favouriteInfo, setFavouriteInfo] = useState<FavouriteWebsite | null>(
@@ -69,44 +72,8 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url }) => {
   //   setSortedHighlights(sorted);
   // }, [highlights])
 
-  const getWebsiteInfo = useCallback(
-    (onEmpty?: () => void) => {
-      if (!document.location.href.startsWith(API_HOST) && url) {
-        chrome.runtime.sendMessage(
-          { action: "GET_WEBSITE_INFO", url, messageApi },
-          function (result: Website) {
-            console.log(result);
-            if (result.url) {
-              setWebsiteInfo(result);
-            } else {
-              onEmpty?.();
-            }
-          }
-        );
-      }
-    },
-    [setWebsiteInfo, messageApi, url]
-  );
-
-  const createWebsiteInfo = useCallback(() => {
-    if (!document.location.href.startsWith(API_HOST) && url) {
-      // TODO: 提取PDF的title和abstract
-      chrome.runtime.sendMessage(
-        {
-          action: "CREATE_WEBSITE_INFO",
-          body: JSON.stringify({ url }),
-          messageApi,
-        },
-        function (result) {
-          console.log(result);
-          getWebsiteInfo();
-        }
-      );
-    }
-  }, [getWebsiteInfo, messageApi, url]);
-
   const getFavouriteInfo = useCallback(() => {
-    if (!document.location.href.startsWith(API_HOST) && url) {
+    if (!document.location.href.startsWith(API_HOST)) {
       chrome.runtime.sendMessage(
         { action: "GET_FAVOURITE_WEBSITE_INFO", url, messageApi },
         function (result: FavouriteWebsite[]) {
@@ -155,14 +122,50 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url }) => {
     }
   }, [setFavouriteInfo, messageApi, url]);
 
-  useEffect(() => {
+  const getWebsiteInfo = useCallback(
+    (onEmpty?: () => void) => {
+      if (!document.location.href.startsWith(API_HOST)) {
+        chrome.runtime.sendMessage(
+          { action: "GET_WEBSITE_INFO", url, messageApi },
+          function (result: Website[]) {
+            console.log(result);
+            if (result.length > 0) {
+              setWebsiteInfo(result[0]);
+              getFavouriteInfo();
+            } else {
+              onEmpty?.();
+            }
+          }
+        );
+      }
+    },
+    [setWebsiteInfo, getFavouriteInfo, messageApi, url]
+  );
+
+  const createWebsiteInfo = useCallback(async () => {
     if (!document.location.href.startsWith(API_HOST)) {
+      const pdfInfo = await extractInfo(pdfDocument!);
+      chrome.runtime.sendMessage(
+        {
+          action: "CREATE_WEBSITE_INFO",
+          body: JSON.stringify({ url, ...pdfInfo }),
+          messageApi,
+        },
+        function (result) {
+          console.log(result);
+          getWebsiteInfo();
+        }
+      );
+    }
+  }, [getWebsiteInfo, messageApi, url, pdfDocument]);
+
+  useEffect(() => {
+    if (url && pdfDocument) {
       getWebsiteInfo(() => {
         createWebsiteInfo();
       });
-      getFavouriteInfo();
     }
-  }, [getWebsiteInfo, createWebsiteInfo, getFavouriteInfo]);
+  }, [getWebsiteInfo, createWebsiteInfo, url, pdfDocument]);
 
   const confirmHandler = useCallback(() => {
     form

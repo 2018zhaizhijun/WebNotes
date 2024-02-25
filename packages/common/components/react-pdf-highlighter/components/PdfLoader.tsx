@@ -10,20 +10,23 @@ interface Props {
   url: string;
   beforeLoad: JSX.Element;
   errorMessage?: JSX.Element;
-  children: (pdfDocument: PDFDocumentProxy) => JSX.Element;
+  children: JSX.Element;
   onError?: (error: Error) => void;
   cMapUrl?: string;
   cMapPacked?: boolean;
+
+  pdfDocument: PDFDocumentProxy | null;
+  setPdfDocument: (pdfDocument: PDFDocumentProxy | null) => void;
 }
 
 interface State {
-  pdfDocument: PDFDocumentProxy | null;
+  // pdfDocument: PDFDocumentProxy | null;
   error: Error | null;
 }
 
 export class PdfLoader extends Component<Props, State> {
   state: State = {
-    pdfDocument: null,
+    // pdfDocument: null,
     error: null,
   };
 
@@ -38,9 +41,10 @@ export class PdfLoader extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    const { pdfDocument: discardedDocument } = this.state;
+    const { pdfDocument: discardedDocument } = this.props;
     if (discardedDocument) {
       discardedDocument.destroy();
+      this.props.setPdfDocument(null);
     }
   }
 
@@ -57,14 +61,20 @@ export class PdfLoader extends Component<Props, State> {
       onError(error);
     }
 
-    this.setState({ pdfDocument: null, error });
+    this.props.setPdfDocument(null);
+    this.setState({ error });
   }
 
   load() {
     const { ownerDocument = document } = this.documentRef.current || {};
-    const { url, cMapUrl, cMapPacked, workerSrc } = this.props;
-    const { pdfDocument: discardedDocument } = this.state;
-    this.setState({ pdfDocument: null, error: null });
+    const {
+      url,
+      cMapUrl,
+      cMapPacked,
+      workerSrc,
+      pdfDocument: discardedDocument,
+    } = this.props;
+    this.setState({ error: null });
 
     if (typeof workerSrc === "string") {
       GlobalWorkerOptions.workerSrc = workerSrc;
@@ -83,15 +93,15 @@ export class PdfLoader extends Component<Props, State> {
           cMapUrl,
           cMapPacked,
         }).promise.then((pdfDocument) => {
-          this.setState({ pdfDocument });
+          this.props.setPdfDocument(pdfDocument);
         });
       })
       .catch((e) => this.componentDidCatch(e));
   }
 
   render() {
-    const { children, beforeLoad } = this.props;
-    const { pdfDocument, error } = this.state;
+    const { children, beforeLoad, pdfDocument } = this.props;
+    const { error } = this.state;
     return (
       <>
         <span ref={this.documentRef} />
@@ -99,7 +109,7 @@ export class PdfLoader extends Component<Props, State> {
           ? this.renderError()
           : !pdfDocument || !children
           ? beforeLoad
-          : children(pdfDocument)}
+          : children}
       </>
     );
   }

@@ -17,12 +17,12 @@ export async function sendRequest<T>(
   api: string,
   params: Object,
   // onSuccess: (json: Object) => void,
-  messageApi: MessageInstance
+  messageApi?: MessageInstance
 ): Promise<T> {
   return fetch(api, params)
     .then(async (res) => {
       if (res.status == 401) {
-        messageApi.open({
+        messageApi?.open({
           type: "error",
           content: "Unauthorized access detected",
         });
@@ -36,7 +36,7 @@ export async function sendRequest<T>(
     })
     .catch((err) => {
       console.log("err:", err);
-      messageApi.open({
+      messageApi?.open({
         type: "error",
         content: err.message,
       });

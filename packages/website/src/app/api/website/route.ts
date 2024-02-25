@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     .selectFrom("Website")
     .where("url", "=", url)
     .selectAll()
-    .executeTakeFirst();
+    .execute();
 
   return Response.json(result);
 }

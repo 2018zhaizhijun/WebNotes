@@ -7,5 +7,7 @@ import React from 'react';
 // document.body.appendChild(app);
 
 let href = document.location.origin + document.location.pathname;
+document.documentElement.style.width = '100%';
+document.documentElement.style.height = '100%';
 
 ReactDOM.render(<PDF url={href} />, document.body);

@@ -35,12 +35,15 @@ model Highlight {
 }
 
 model Website {
+  id                 Int                @unique @default(autoincrement())
   url                String             @id @db.VarChar(255)
   title              String?            @db.VarChar(255)
   abstract           String?            @db.Text
   websiteFavoritedBy FavouriteWebsite[]
   noteFavoritedBy    FavouriteNote[]
   highlights         Highlight[]
+
+  @@index([id])
 }
 
 model FavouriteUser {
@@ -108,8 +111,7 @@ model Session {
 
 model User {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid // @default(cuid())
-  name             String?            @db.VarChar(255)
-  avatar           Bytes?
+  name             String             @unique @db.VarChar(255)
   email            String?            @unique
   emailVerified    DateTime? // @map(name: "email_verified")
   image            String?

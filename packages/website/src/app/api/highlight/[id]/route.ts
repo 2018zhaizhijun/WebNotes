@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { authOptions } from "@/api/auth/[...nextauth]/route";
 // import prisma from "@/lib/prisma";
 import db from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "@/lib/httpcode";
+import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
 
 export async function DELETE(
   req: NextRequest,

@@ -20,7 +20,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { message } from "antd";
 
 import { API_HOST, queryParse, sendRequest } from "../utils/http";
-import { HighlightType } from "../db/prisma-json";
+import { HighlightType } from "../db/prisma";
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 
 const parseIdFromHash = () =>
@@ -34,31 +34,47 @@ const HighlightPopup = ({
   comment,
   deleteHighlight,
   hideTip,
+  readOnly = false,
 }: {
   comment?: { text: string } | null;
   deleteHighlight?: () => void;
   hideTip?: () => void;
+  readOnly?: boolean;
 }) => {
   return (
     <div className="Highlight__popup">
       {comment?.text ? (
         <span style={{ marginRight: "15px" }}>{comment.text}</span>
       ) : null}
-      <button
-        onClick={() => {
-          deleteHighlight?.();
-          hideTip?.();
-        }}
-      >
-        <DeleteOutlined />
-      </button>
+      {readOnly ? null : (
+        <button
+          onClick={() => {
+            deleteHighlight?.();
+            hideTip?.();
+          }}
+        >
+          <DeleteOutlined />
+        </button>
+      )}
     </div>
   );
 };
 
 const href = document.location.href;
 
-const PDF: React.FC<{ url: string }> = ({ url }) => {
+interface PDFProps {
+  url: string;
+  authorId?: string;
+  sidebarPosition?: "left" | "right";
+  readOnly?: boolean;
+}
+
+const PDF: React.FC<PDFProps> = ({
+  url,
+  authorId,
+  sidebarPosition = "left",
+  readOnly = false,
+}) => {
   // const [url, setUrl] = useState<string>(initialUrl);
   const [highlights, setHighlights] = useState<HighlightType[]>([]);
   const [scrollViewerTo, setScrollViewerTo] = useState(
@@ -90,7 +106,7 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
   const getHighlights = useCallback(() => {
     if (href.startsWith(API_HOST)) {
       return sendRequest<HighlightType[]>(
-        `${API_HOST}/api/highlight?${queryParse({ url })}`,
+        `${API_HOST}/api/highlight?${queryParse({ url, authorId })}`,
         {
           method: "GET",
         },
@@ -100,14 +116,14 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
       });
     } else {
       chrome.runtime.sendMessage(
-        { action: "GET_HIGHLIGHTS", url, messageApi },
+        { action: "GET_HIGHLIGHTS", url, authorId, messageApi },
         function (result: HighlightType[]) {
           console.log(result);
           setHighlights(result);
         }
       );
     }
-  }, [sendRequest, setHighlights, messageApi]);
+  }, [sendRequest, setHighlights, messageApi, url, authorId]);
 
   useEffect(() => {
     getHighlights();
@@ -159,13 +175,21 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
   );
 
   return (
-    <div className="PDF" style={{ display: "flex", height: "100vh" }}>
+    <div
+      className="PDF"
+      style={{
+        display: "flex",
+        flexDirection: sidebarPosition === "right" ? "row-reverse" : "row",
+        height: "100%",
+        width: "100%",
+      }}
+    >
       {contextHolder}
       <Sidebar highlights={highlights} url={url} pdfDocument={pdfDocument} />
       <div
         style={{
-          height: "100vh",
-          width: "75vw",
+          height: "100%",
+          width: "75%",
           position: "relative",
         }}
       >
@@ -191,57 +215,59 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
                 content,
                 hideTipAndSelection,
                 transformSelection
-              ) => (
-                <Tip
-                  onConfirm={async (
-                    color: string,
-                    comment?: { text: string }
-                  ) => {
-                    transformSelection();
+              ) =>
+                readOnly ? null : (
+                  <Tip
+                    onConfirm={async (
+                      color: string,
+                      comment?: { text: string }
+                    ) => {
+                      transformSelection();
 
-                    if (href.startsWith(API_HOST)) {
-                      sendRequest(
-                        `${API_HOST}/api/highlight`,
-                        {
-                          method: "POST",
-                          headers: {
-                            "Content-type": "application/json; charset=UTF-8",
+                      if (href.startsWith(API_HOST)) {
+                        sendRequest(
+                          `${API_HOST}/api/highlight`,
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-type": "application/json; charset=UTF-8",
+                            },
+                            body: JSON.stringify({
+                              url,
+                              content,
+                              position,
+                              comment,
+                              backgroundColor: color,
+                            }),
                           },
-                          body: JSON.stringify({
-                            url,
-                            content,
-                            position,
-                            comment,
-                            backgroundColor: color,
-                          }),
-                        },
-                        messageApi
-                      ).then(async () => {
-                        hideTipAndSelection();
-                        await getHighlights();
-                      });
-                    } else {
-                      chrome.runtime.sendMessage(
-                        {
-                          action: "CREATE_HIGHLIGHT",
-                          messageApi,
-                          body: JSON.stringify({
-                            url,
-                            content,
-                            position,
-                            comment,
-                            backgroundColor: color,
-                          }),
-                        },
-                        function () {
+                          messageApi
+                        ).then(async () => {
                           hideTipAndSelection();
-                          getHighlights();
-                        }
-                      );
-                    }
-                  }}
-                />
-              )}
+                          await getHighlights();
+                        });
+                      } else {
+                        chrome.runtime.sendMessage(
+                          {
+                            action: "CREATE_HIGHLIGHT",
+                            messageApi,
+                            body: JSON.stringify({
+                              url,
+                              content,
+                              position,
+                              comment,
+                              backgroundColor: color,
+                            }),
+                          },
+                          function () {
+                            hideTipAndSelection();
+                            getHighlights();
+                          }
+                        );
+                      }
+                    }}
+                  />
+                )
+              }
               highlightTransform={(
                 highlight,
                 index,
@@ -280,6 +306,7 @@ const PDF: React.FC<{ url: string }> = ({ url }) => {
                     popupContent={
                       <HighlightPopup
                         {...highlight}
+                        readOnly={readOnly}
                         deleteHighlight={() => {
                           if (href.startsWith(API_HOST)) {
                             sendRequest(

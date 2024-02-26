@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { NextRequest } from "next/server";
 import { authOptions } from "@/api/auth/[...nextauth]/route";
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "@/lib/httpcode";
+import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
 import db from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     .insertInto("FavouriteNote")
     .values({
       ...request,
-      followerId: followerId.toString(),
+      followerId: followerId,
     })
     .executeTakeFirst();
 

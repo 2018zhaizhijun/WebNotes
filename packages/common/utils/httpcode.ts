@@ -1,19 +1,20 @@
-import { MessageInstance } from "antd/es/message/interface";
-
 export enum HTTP_CODE {
-  NOT_LOGGED,
+  NOT_LOGGED = 401,
+  AUTHOR_NOT_FOUND = 402,
 }
 
-const CODE_INFO: { [k in HTTP_CODE]: { status: number; message: string } } = {
+export const CODE_INFO: { [k in HTTP_CODE]: { message: string } } = {
   [HTTP_CODE.NOT_LOGGED]: {
-    status: 401,
     message: "Unauthorized access detected",
+  },
+  [HTTP_CODE.AUTHOR_NOT_FOUND]: {
+    message: "Author not found",
   },
 };
 
 export function responseFail(error_code: HTTP_CODE) {
   return new Response(CODE_INFO[error_code]["message"], {
-    status: CODE_INFO[error_code]["status"],
+    status: error_code,
   });
 }
 

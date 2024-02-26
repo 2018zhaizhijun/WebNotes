@@ -1,4 +1,4 @@
-import { HighlightType } from 'common/db/prisma-json';
+import { HighlightType } from 'common/db/prisma';
 import { Website, FavouriteWebsite } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 import { DeleteResult, InsertResult, UpdateResult } from 'kysely';
@@ -132,13 +132,28 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       onSuccess(json);
     });
     return true;
+  } else if (request.action === 'CREATE_FAVOURITE_WEBSITE_INFO') {
+    sendRequest<InsertResult>(
+      `${API_HOST}/api/favourite/website`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+        body: request.body,
+      },
+      request.messageApi
+    ).then((res) => {
+      onSuccess(res);
+    });
+    return true;
   } else if (request.action === 'UPDATE_FAVOURITE_WEBSITE_INFO') {
-    sendRequest<InsertResult | UpdateResult>(
+    sendRequest<UpdateResult>(
       `${API_HOST}/api/favourite/website?${queryParse({
         url: request.url,
       })}`,
       {
-        method: request.isCreate ? 'POST' : 'PUT',
+        method: 'PUT',
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
         },

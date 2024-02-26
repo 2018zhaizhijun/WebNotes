@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { NextRequest } from "next/server";
 import { authOptions } from "@/api/auth/[...nextauth]/route";
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "@/lib/httpcode";
+import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
 import db from "@/lib/prisma";
 import { sql } from "kysely";
 
@@ -10,8 +10,20 @@ export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
   console.log("Get highlights of " + url);
 
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+  let query = db.selectFrom("Highlight");
+
+  const authorId = req.nextUrl.searchParams.get("authorId");
+  if (authorId) {
+    query = query.where("authorId", "=", authorId);
+    query = query.where("privacy", "=", false);
+  } else {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (userId) {
+      query = query.where("authorId", "=", userId);
+    }
+  }
 
   // validation session
   // if (!userId) {
@@ -26,14 +38,12 @@ export async function GET(req: NextRequest) {
   //   },
   // });
 
-  let query = db.selectFrom("Highlight");
-
   // TODO: 未登录时默认显示为空，点击悬浮按钮后才查询所有人的公开highlight
-  if (userId) {
-    query = query.where("authorId", "=", userId); // Kysely is immutable, you must re-assign!
-  } else {
-    query = query.where("privacy", "=", false);
-  }
+  // if (userId) {
+  //   query = query.where("authorId", "=", userId); // Kysely is immutable, you must re-assign!
+  // } else {
+  //   query = query.where("privacy", "=", false);
+  // }
 
   if (url) {
     query = query.where("url", "=", url);
@@ -72,7 +82,7 @@ export async function POST(req: NextRequest) {
     .insertInto("Highlight")
     .values({
       ...request,
-      authorId: userId.toString(),
+      authorId: userId,
     })
     .executeTakeFirst();
 

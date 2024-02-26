@@ -2,10 +2,22 @@ import { getServerSession } from "next-auth/next";
 import { NextRequest } from "next/server";
 import { authOptions } from "@/api/auth/[...nextauth]/route";
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "@/lib/httpcode";
+import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
 import db from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
+  const userName = req.nextUrl.searchParams.get("userName");
+  console.log("Get user info of " + userName);
+
+  if (userName) {
+    const result = await db
+      .selectFrom("User")
+      .where("name", "=", userName)
+      .select(["id", "name", "image"])
+      .executeTakeFirst();
+    return Response.json(result);
+  }
+
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
 

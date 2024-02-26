@@ -53,8 +53,7 @@ export type Session = {
 };
 export type User = {
     id: Generated<string>;
-    name: string | null;
-    avatar: Buffer | null;
+    name: string;
     email: string | null;
     emailVerified: Timestamp | null;
     image: string | null;
@@ -65,6 +64,7 @@ export type VerificationToken = {
     expires: Timestamp;
 };
 export type Website = {
+    id: Generated<number>;
     url: string;
     title: string | null;
     abstract: string | null;

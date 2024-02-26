@@ -63,7 +63,7 @@ export function HighlightLayer<T_HT extends IHighlight>({
           showTip(tip.highlight, tip.callback(viewportHighlight));
         }
 
-        const isScrolledTo = Boolean(scrolledToHighlightId === id);
+        const isScrolledTo = Boolean(scrolledToHighlightId == id);
 
         return highlightTransform(
           viewportHighlight,

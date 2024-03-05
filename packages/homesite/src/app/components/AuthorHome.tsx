@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import AuthorHeader from "./AuthorHeader";
-import { Menu, MenuProps, message } from "antd";
+import { Menu, MenuProps } from "antd";
 import PDF from "common/components/PDF";
 import { Website } from "common/db/types";
 import { API_HOST, queryParse, sendRequest } from "common/utils/http";
 import { groupBy } from "@/lib/utils";
 import FavouriteIcon from "common/components/FavouriteIcon";
-import { SimplifiedUser } from "common/db/prisma";
+import { HighlightType, SimplifiedUser } from "common/db/prisma";
 import { useSession } from "next-auth/react";
+import SidebarButtons from "./SidebarButtons";
 
 interface AuthorHomeProps {
   authorInfo: SimplifiedUser;
@@ -19,7 +20,6 @@ type NotedWebsitesType = {
 };
 
 const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
-  const [messageApi, contextHolder] = message.useMessage();
   const { data: session, update } = useSession();
   const [activatedUrl, setActivatedUrl] = useState<string>();
   const [notedWebsites, setNotedWebsites] = useState<NotedWebsitesType>({
@@ -34,14 +34,13 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
       })}`,
       {
         method: "GET",
-      },
-      messageApi
+      }
     ).then((json) => {
       if (json.result_highlight || json.result_favourite) {
         setNotedWebsites(json);
       }
     });
-  }, [authorInfo, sendRequest, setNotedWebsites, messageApi]);
+  }, [authorInfo, sendRequest, setNotedWebsites]);
 
   const items: MenuProps["items"] = useMemo(() => {
     const result_favourite = groupBy(notedWebsites.result_favourite, "tag");
@@ -54,7 +53,7 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
         icon: <FavouriteIcon />,
         children: result_favourite[key].map(
           (item: NotedWebsitesType["result_favourite"][number]) => {
-            return { label: item.rename, key: item.url };
+            return { label: item.rename, key: `${item.url} ${item.id}` };
           }
         ),
       };
@@ -68,7 +67,7 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
               key: "Highlighted",
               type: "group",
               children: notedWebsites.result_highlight.map((item) => {
-                return { label: item.title, key: item.url };
+                return { label: item.title, key: `${item.url} ${item.id}` };
               }),
             },
           ]
@@ -93,13 +92,14 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
 
   return (
     <>
-      {contextHolder}
       <AuthorHeader authorInfo={authorInfo} />
       <div className="mainContent">
         {items.length > 0 ? (
           <Menu
             onSelect={(e) => {
-              setActivatedUrl(e.key);
+              if (e.key !== activatedUrl) {
+                setActivatedUrl(e.key);
+              }
             }}
             style={{ width: 256 }}
             defaultOpenKeys={[
@@ -113,10 +113,19 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
         ) : null}
         {activatedUrl && (
           <PDF
-            url={activatedUrl}
+            url={activatedUrl.split(" ")[0]}
             authorId={authorInfo.id}
             sidebarPosition="right"
             readOnly={authorInfo.id !== session?.user?.id}
+            appendButtons={(highlights: HighlightType[]) => {
+              return (
+                <SidebarButtons
+                  highlights={highlights}
+                  homepageUrl={`/website/${activatedUrl.split(" ")[1]}`}
+                  websiteUrl={activatedUrl.split(" ")[0]}
+                />
+              );
+            }}
           />
         )}
       </div>

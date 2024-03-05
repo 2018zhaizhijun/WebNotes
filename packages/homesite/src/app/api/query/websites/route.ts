@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
     .selectFrom("Website")
     .innerJoin("FavouriteWebsite", "FavouriteWebsite.websiteUrl", "Website.url")
     .select([
+      "Website.id as id",
       "Website.url as url",
       "Website.title as title",
       "Website.abstract as abstract",
@@ -40,9 +41,8 @@ export async function GET(req: NextRequest) {
     .where("FavouriteWebsite.followerId", "=", authorId)
     .execute();
 
-  const result_highlight = await db
+  let query = db
     .selectFrom("Website")
-    .selectAll()
     .where(({ eb, selectFrom }) =>
       eb(
         "url",
@@ -51,13 +51,15 @@ export async function GET(req: NextRequest) {
           .select("Highlight.url")
           .where("Highlight.authorId", "=", authorId)
       )
-    )
-    .where(
+    );
+  if (result_favourite.length > 0) {
+    query = query.where(
       "url",
       "not in",
       result_favourite.map((w) => w.url)
-    )
-    .execute();
+    );
+  }
+  const result_highlight = await query.selectAll().execute();
 
   const result = {
     result_highlight,

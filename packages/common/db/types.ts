@@ -53,7 +53,7 @@ export type Session = {
 };
 export type User = {
     id: Generated<string>;
-    name: string;
+    name: Generated<string>;
     email: string | null;
     emailVerified: Timestamp | null;
     image: string | null;

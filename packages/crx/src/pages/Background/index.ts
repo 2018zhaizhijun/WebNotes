@@ -7,13 +7,9 @@ import { Session } from 'next-auth';
 chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
   if (request.action === 'AUTH_CHECK') {
     console.log('running auth check');
-    sendRequest<Session>(
-      `${API_HOST}/api/auth/session`,
-      {
-        mode: 'cors',
-      },
-      request.messageApi
-    ).then((session) => {
+    sendRequest<Session>(`${API_HOST}/api/auth/session`, {
+      mode: 'cors',
+    }).then((session) => {
       console.log(session);
       if (session.user) {
         onSuccess(session);
@@ -45,8 +41,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       `${API_HOST}/api/highlight?${queryParse({ url: request.url })}`,
       {
         method: 'GET',
-      },
-      request.messageApi
+      }
     ).then((json) => {
       onSuccess(json);
     });
@@ -60,24 +55,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
           'Content-type': 'application/json; charset=UTF-8',
         },
         body: request.body,
-      },
-      request.messageApi
+      }
     ).then((res) => {
       onSuccess(res);
     });
     return true;
   } else if (request.action === 'CREATE_HIGHLIGHT') {
-    sendRequest<InsertResult>(
-      `${API_HOST}/api/highlight`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-        body: request.body,
+    sendRequest<InsertResult>(`${API_HOST}/api/highlight`, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
       },
-      request.messageApi
-    ).then((res) => {
+      body: request.body,
+    }).then((res) => {
       onSuccess(res);
     });
     return true;
@@ -86,8 +76,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       `${API_HOST}/api/highlight/${request.highlightId}`,
       {
         method: 'DELETE',
-      },
-      request.messageApi
+      }
     ).then((res) => {
       onSuccess(res);
     });
@@ -98,24 +87,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       `${API_HOST}/api/website?${queryParse({ url: request.url })}`,
       {
         method: 'GET',
-      },
-      request.messageApi
+      }
     ).then((json) => {
       onSuccess(json);
     });
     return true;
   } else if (request.action === 'CREATE_WEBSITE_INFO') {
-    sendRequest<InsertResult>(
-      `${API_HOST}/api/website`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-        body: request.body,
+    sendRequest<InsertResult>(`${API_HOST}/api/website`, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
       },
-      request.messageApi
-    ).then((res) => {
+      body: request.body,
+    }).then((res) => {
       onSuccess(res);
     });
     return true;
@@ -126,24 +110,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       })}`,
       {
         method: 'GET',
-      },
-      request.messageApi
+      }
     ).then((json) => {
       onSuccess(json);
     });
     return true;
   } else if (request.action === 'CREATE_FAVOURITE_WEBSITE_INFO') {
-    sendRequest<InsertResult>(
-      `${API_HOST}/api/favourite/website`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-        body: request.body,
+    sendRequest<InsertResult>(`${API_HOST}/api/favourite/website`, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
       },
-      request.messageApi
-    ).then((res) => {
+      body: request.body,
+    }).then((res) => {
       onSuccess(res);
     });
     return true;
@@ -158,8 +137,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
           'Content-type': 'application/json; charset=UTF-8',
         },
         body: request.body,
-      },
-      request.messageApi
+      }
     ).then((res) => {
       onSuccess(res);
     });
@@ -171,8 +149,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
       })}`,
       {
         method: 'DELETE',
-      },
-      request.messageApi
+      }
     ).then((res) => {
       onSuccess(res);
     });

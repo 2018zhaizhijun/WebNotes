@@ -1,10 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { Form, Input, Modal, Upload, message } from "antd";
-import { API_HOST, getBase64, sendRequest } from "../utils/http";
-import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
-import { useSession } from "next-auth/react";
+import { Form, Input, Modal, Upload } from "antd";
+import { API_HOST, getBase64, queryParse, sendRequest } from "../utils/http";
 import { UploadFile } from "antd/es/upload";
 import { Session } from "next-auth";
+import { SimplifiedUser } from "db/prisma";
 
 interface UserModalProps {
   open: boolean;
@@ -36,28 +35,46 @@ const UserModal: React.FC<UserModalProps> = ({
   ]);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
+
+  const userNameValidator = useCallback(
+    (rule: any, value: string, callback: any) => {
+      if (!value || value === session.user?.name) {
+        callback();
+      }
+      if (!/^[a-zA-Z0-9-_]+$/.test(value)) {
+        callback("User name can only contain letters, numbers, '-' and '_' ");
+      }
+      sendRequest<SimplifiedUser[]>(
+        `${API_HOST}/api/user?${queryParse({ name: value })}`,
+        {
+          method: "GET",
+        }
+      ).then((json) => {
+        if (json.length > 0) {
+          callback("User name already exists");
+        }
+        callback();
+      });
+    },
+    [sendRequest, session]
+  );
 
   const updateUserInfo = useCallback(
     async (image: string, name: string, onOk: () => void) => {
-      return sendRequest(
-        `${API_HOST}/api/user`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-          body: JSON.stringify({
-            image,
-            name,
-          }),
+      return sendRequest(`${API_HOST}/api/user`, {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
         },
-        messageApi
-      ).then((json) => {
+        body: JSON.stringify({
+          image,
+          name,
+        }),
+      }).then((json) => {
         onOk?.();
       });
     },
-    [sendRequest, messageApi]
+    [sendRequest]
   );
 
   const confirmHandler = useCallback(() => {
@@ -73,6 +90,7 @@ const UserModal: React.FC<UserModalProps> = ({
       })
       .catch((info) => {
         console.log("Validate Failed:", info);
+        setConfirmLoading(false);
       });
   }, [
     setConfirmLoading,
@@ -141,7 +159,6 @@ const UserModal: React.FC<UserModalProps> = ({
 
   return (
     <>
-      {contextHolder}
       <Modal
         title="Edit User Info"
         open={open}
@@ -192,7 +209,11 @@ const UserModal: React.FC<UserModalProps> = ({
               />
             </Upload>
           </Form.Item>
-          <Form.Item label="Username" name="name">
+          <Form.Item
+            label="Username"
+            name="name"
+            rules={[{ required: true }, { validator: userNameValidator }]}
+          >
             <Input />
           </Form.Item>
         </Form>

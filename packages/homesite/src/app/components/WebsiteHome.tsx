@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Menu, MenuProps, message } from "antd";
+import { Menu, MenuProps } from "antd";
 import PDF from "common/components/PDF";
 import { Website } from "common/db/types";
 import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import { SimplifiedUser } from "common/db/prisma";
+import { HighlightType, SimplifiedUser } from "common/db/prisma";
 import WebsiteHeader from "./WebsiteHeader";
 import { useSession } from "next-auth/react";
+import SidebarButtons from "./SidebarButtons";
 
 interface WebsiteHomeProps {
   websiteInfo: Website;
 }
 
 const WebsiteHome: React.FC<WebsiteHomeProps> = ({ websiteInfo }) => {
-  const [messageApi, contextHolder] = message.useMessage();
   const { data: session, update } = useSession();
-  const [activatedAuthorId, setActivatedAuthorId] = useState<string>();
+  const [activatedAuthor, setActivatedAuthor] = useState<string>("");
   const [notedAuthors, setNotedAuthors] = useState<SimplifiedUser[]>([]);
 
   const getNotedAuthors = useCallback(() => {
@@ -24,18 +24,17 @@ const WebsiteHome: React.FC<WebsiteHomeProps> = ({ websiteInfo }) => {
       })}`,
       {
         method: "GET",
-      },
-      messageApi
+      }
     ).then((json) => {
       if (Array.isArray(json)) {
         setNotedAuthors(json);
       }
     });
-  }, [websiteInfo, sendRequest, setNotedAuthors, messageApi]);
+  }, [websiteInfo, sendRequest, setNotedAuthors]);
 
   const items: MenuProps["items"] = useMemo(() => {
     const items_children: MenuProps["items"] = notedAuthors.map((item) => {
-      return { label: item.name, key: item.id };
+      return { label: item.name, key: `${item.name} ${item.id}` };
     });
 
     // 若用户也在列表中,则将其置顶
@@ -48,7 +47,7 @@ const WebsiteHome: React.FC<WebsiteHomeProps> = ({ websiteInfo }) => {
     }
 
     console.log(items_children);
-    setActivatedAuthorId(items_children[0]?.key as string);
+    setActivatedAuthor(items_children[0]?.key as string);
 
     const items: MenuProps["items"] = [
       {
@@ -68,27 +67,39 @@ const WebsiteHome: React.FC<WebsiteHomeProps> = ({ websiteInfo }) => {
 
   return (
     <>
-      {contextHolder}
       <WebsiteHeader websiteInfo={websiteInfo} />
       <div className="mainContent">
         {items.length > 0 ? (
           <Menu
             onSelect={(e) => {
-              setActivatedAuthorId(e.key);
+              if (e.key !== activatedAuthor) {
+                setActivatedAuthor(e.key);
+              }
             }}
             style={{ width: 256 }}
             mode="inline"
             items={items}
             multiple={false}
-            selectedKeys={[activatedAuthorId || ""]}
+            selectedKeys={[activatedAuthor || ""]}
           />
         ) : null}
-        <PDF
-          url={websiteInfo.url}
-          authorId={activatedAuthorId}
-          sidebarPosition="right"
-          readOnly={activatedAuthorId !== session?.user?.id}
-        />
+        {activatedAuthor && (
+          <PDF
+            url={websiteInfo.url}
+            authorId={activatedAuthor.split(" ")[1]}
+            sidebarPosition="right"
+            readOnly={activatedAuthor.split(" ")[1] !== session?.user?.id}
+            appendButtons={(highlights: HighlightType[]) => {
+              return (
+                <SidebarButtons
+                  highlights={highlights}
+                  homepageUrl={`/author/${activatedAuthor.split(" ")[0]}`}
+                  websiteUrl={websiteInfo.url}
+                />
+              );
+            }}
+          />
+        )}
       </div>
     </>
   );

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf";
 import type { PDFDocumentProxy } from "pdfjs-dist";
+import { getBinaryData } from "../../../utils/pdf";
 
 interface Props {
   /** See `GlobalWorkerOptionsType`. */
@@ -75,6 +76,7 @@ export class PdfLoader extends Component<Props, State> {
       pdfDocument: discardedDocument,
     } = this.props;
     this.setState({ error: null });
+    this.props.setPdfDocument(null);
 
     if (typeof workerSrc === "string") {
       GlobalWorkerOptions.workerSrc = workerSrc;
@@ -87,14 +89,20 @@ export class PdfLoader extends Component<Props, State> {
           return;
         }
 
-        return getDocument({
+        getDocument({
           ...this.props,
           ownerDocument,
           cMapUrl,
           cMapPacked,
-        }).promise.then((pdfDocument) => {
-          this.props.setPdfDocument(pdfDocument);
-        });
+        })
+          .promise.then((pdfDocument) => {
+            this.props.setPdfDocument(pdfDocument);
+          })
+          .catch(() => {
+            getBinaryData(this.props.url, (pdfDocument: PDFDocumentProxy) => {
+              this.props.setPdfDocument(pdfDocument);
+            });
+          });
       })
       .catch((e) => this.componentDidCatch(e));
   }

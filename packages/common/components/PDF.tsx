@@ -17,7 +17,7 @@ import Tip from "./Tip";
 
 import "./style/PDF.css";
 import { DeleteOutlined } from "@ant-design/icons";
-import { message } from "antd";
+import { Space } from "antd";
 
 import { API_HOST, queryParse, sendRequest } from "../utils/http";
 import { HighlightType } from "../db/prisma";
@@ -43,19 +43,19 @@ const HighlightPopup = ({
 }) => {
   return (
     <div className="Highlight__popup">
-      {comment?.text ? (
-        <span style={{ marginRight: "15px" }}>{comment.text}</span>
-      ) : null}
-      {readOnly ? null : (
-        <button
-          onClick={() => {
-            deleteHighlight?.();
-            hideTip?.();
-          }}
-        >
-          <DeleteOutlined />
-        </button>
-      )}
+      <Space>
+        {comment?.text ? <span>{comment.text}</span> : null}
+        {readOnly ? null : (
+          <button
+            onClick={() => {
+              deleteHighlight?.();
+              hideTip?.();
+            }}
+          >
+            <DeleteOutlined />
+          </button>
+        )}
+      </Space>
     </div>
   );
 };
@@ -67,6 +67,7 @@ interface PDFProps {
   authorId?: string;
   sidebarPosition?: "left" | "right";
   readOnly?: boolean;
+  appendButtons?: (highlights: HighlightType[]) => React.ReactNode;
 }
 
 const PDF: React.FC<PDFProps> = ({
@@ -74,6 +75,7 @@ const PDF: React.FC<PDFProps> = ({
   authorId,
   sidebarPosition = "left",
   readOnly = false,
+  appendButtons,
 }) => {
   // const [url, setUrl] = useState<string>(initialUrl);
   const [highlights, setHighlights] = useState<HighlightType[]>([]);
@@ -81,8 +83,6 @@ const PDF: React.FC<PDFProps> = ({
     () => (highlight: any) => {}
   );
   const [pdfDocument, setPdfDocument] = useState<PDFDocumentProxy | null>(null);
-
-  const [messageApi, contextHolder] = message.useMessage();
 
   const getHighlightById = useCallback(
     (id: string) => {
@@ -109,21 +109,20 @@ const PDF: React.FC<PDFProps> = ({
         `${API_HOST}/api/highlight?${queryParse({ url, authorId })}`,
         {
           method: "GET",
-        },
-        messageApi
+        }
       ).then((json) => {
         setHighlights(json);
       });
     } else {
       chrome.runtime.sendMessage(
-        { action: "GET_HIGHLIGHTS", url, authorId, messageApi },
+        { action: "GET_HIGHLIGHTS", url, authorId },
         function (result: HighlightType[]) {
           console.log(result);
           setHighlights(result);
         }
       );
     }
-  }, [sendRequest, setHighlights, messageApi, url, authorId]);
+  }, [sendRequest, setHighlights, url, authorId]);
 
   useEffect(() => {
     getHighlights();
@@ -138,20 +137,16 @@ const PDF: React.FC<PDFProps> = ({
       });
 
       if (href.startsWith(API_HOST)) {
-        sendRequest(
-          `${API_HOST}/api/highlight/${highlightId}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-type": "application/json; charset=UTF-8",
-            },
-            body: JSON.stringify({
-              position: { ...original?.position, ...position },
-              content: { ...original?.content, ...content },
-            }),
+        sendRequest(`${API_HOST}/api/highlight/${highlightId}`, {
+          method: "PUT",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
           },
-          messageApi
-        ).then(async () => {
+          body: JSON.stringify({
+            position: { ...original?.position, ...position },
+            content: { ...original?.content, ...content },
+          }),
+        }).then(async () => {
           await getHighlights();
         });
       } else {
@@ -159,7 +154,6 @@ const PDF: React.FC<PDFProps> = ({
           {
             action: "UPDATE_HIGHLIGHT",
             highlightId,
-            messageApi,
             body: JSON.stringify({
               position: { ...original?.position, ...position },
               content: { ...original?.content, ...content },
@@ -171,7 +165,7 @@ const PDF: React.FC<PDFProps> = ({
         );
       }
     },
-    [highlights, getHighlights, sendRequest, messageApi]
+    [highlights, getHighlights, sendRequest]
   );
 
   return (
@@ -184,8 +178,12 @@ const PDF: React.FC<PDFProps> = ({
         width: "100%",
       }}
     >
-      {contextHolder}
-      <Sidebar highlights={highlights} url={url} pdfDocument={pdfDocument} />
+      <Sidebar
+        highlights={pdfDocument ? highlights : []}
+        url={url}
+        pdfDocument={pdfDocument}
+        appendButtons={appendButtons}
+      />
       <div
         style={{
           height: "100%",
@@ -225,23 +223,19 @@ const PDF: React.FC<PDFProps> = ({
                       transformSelection();
 
                       if (href.startsWith(API_HOST)) {
-                        sendRequest(
-                          `${API_HOST}/api/highlight`,
-                          {
-                            method: "POST",
-                            headers: {
-                              "Content-type": "application/json; charset=UTF-8",
-                            },
-                            body: JSON.stringify({
-                              url,
-                              content,
-                              position,
-                              comment,
-                              backgroundColor: color,
-                            }),
+                        sendRequest(`${API_HOST}/api/highlight`, {
+                          method: "POST",
+                          headers: {
+                            "Content-type": "application/json; charset=UTF-8",
                           },
-                          messageApi
-                        ).then(async () => {
+                          body: JSON.stringify({
+                            url,
+                            content,
+                            position,
+                            comment,
+                            backgroundColor: color,
+                          }),
+                        }).then(async () => {
                           hideTipAndSelection();
                           await getHighlights();
                         });
@@ -249,7 +243,6 @@ const PDF: React.FC<PDFProps> = ({
                         chrome.runtime.sendMessage(
                           {
                             action: "CREATE_HIGHLIGHT",
-                            messageApi,
                             body: JSON.stringify({
                               url,
                               content,
@@ -304,35 +297,37 @@ const PDF: React.FC<PDFProps> = ({
                 return (
                   <Popup
                     popupContent={
-                      <HighlightPopup
-                        {...highlight}
-                        readOnly={readOnly}
-                        deleteHighlight={() => {
-                          if (href.startsWith(API_HOST)) {
-                            sendRequest(
-                              `${API_HOST}/api/highlight/${highlight.id}`,
-                              {
-                                method: "DELETE",
-                              },
-                              messageApi
-                            ).then(async () => {
-                              await getHighlights();
-                            });
-                          } else {
-                            chrome.runtime.sendMessage(
-                              {
-                                action: "DELETE_HIGHLIGHT",
-                                highlightId: highlight.id,
-                                messageApi,
-                              },
-                              () => {
-                                getHighlights();
-                              }
-                            );
-                          }
-                        }}
-                        hideTip={hideTip}
-                      />
+                      readOnly && !highlight.comment?.text ? (
+                        <></>
+                      ) : (
+                        <HighlightPopup
+                          {...highlight}
+                          readOnly={readOnly}
+                          deleteHighlight={() => {
+                            if (href.startsWith(API_HOST)) {
+                              sendRequest(
+                                `${API_HOST}/api/highlight/${highlight.id}`,
+                                {
+                                  method: "DELETE",
+                                }
+                              ).then(async () => {
+                                await getHighlights();
+                              });
+                            } else {
+                              chrome.runtime.sendMessage(
+                                {
+                                  action: "DELETE_HIGHLIGHT",
+                                  highlightId: highlight.id,
+                                },
+                                () => {
+                                  getHighlights();
+                                }
+                              );
+                            }
+                          }}
+                          hideTip={hideTip}
+                        />
+                      )
                     }
                     onMouseOver={(popupContent) =>
                       setTip(highlight, (highlight) => popupContent)
@@ -343,7 +338,7 @@ const PDF: React.FC<PDFProps> = ({
                   />
                 );
               }}
-              highlights={highlights}
+              highlights={pdfDocument ? highlights : []}
             />
           ) : (
             <></>

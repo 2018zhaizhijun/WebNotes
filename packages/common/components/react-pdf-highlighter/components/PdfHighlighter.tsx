@@ -39,10 +39,11 @@ import { HighlightLayer } from "./HighlightLayer";
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
 
 interface State<T_HT> {
-  ghostHighlight: {
-    position: ScaledPosition;
-    content?: { text?: string; image?: string };
-  } | null;
+  // ghostHighlight有什么作用？
+  // ghostHighlight: {
+  //   position: ScaledPosition;
+  //   content?: { text?: string; image?: string };
+  // } | null;
   isCollapsed: boolean;
   range: Range | null;
   tip: {
@@ -93,7 +94,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   };
 
   state: State<T_HT> = {
-    ghostHighlight: null,
+    // ghostHighlight: null,
     isCollapsed: true,
     range: null,
     scrolledToHighlightId: EMPTY_ID,
@@ -179,7 +180,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         container: this.containerNodeRef!.current!,
         eventBus: this.eventBus,
         // enhanceTextSelection: true, // deprecated. https://github.com/mozilla/pdf.js/issues/9943#issuecomment-409369485
-        textLayerMode: 2,
+        textLayerMode: 1, // 0: DISABLE  1: ENABLE  2: ENBALE_ENHANCE (not maintained anymore)
         removePageBorders: true,
         linkService: this.linkService,
         l10n: NullL10n,
@@ -212,9 +213,9 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   groupHighlightsByPage(highlights: Array<T_HT>): {
     [pageNumber: string]: Array<T_HT>;
   } {
-    const { ghostHighlight } = this.state;
+    // const { ghostHighlight } = this.state;
 
-    const allHighlights = [...highlights, ghostHighlight].filter(Boolean);
+    const allHighlights = [...highlights].filter(Boolean);
 
     const pageNumbers = new Set<number>();
     for (const highlight of allHighlights) {
@@ -259,10 +260,9 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   }
 
   showTip(highlight: T_ViewportHighlight<T_HT>, content: JSX.Element) {
-    const { isCollapsed, ghostHighlight, isAreaSelectionInProgress } =
-      this.state;
+    const { isCollapsed, isAreaSelectionInProgress } = this.state;
 
-    const highlightInProgress = !isCollapsed || ghostHighlight;
+    const highlightInProgress = !isCollapsed; //  || ghostHighlight;
 
     if (highlightInProgress || isAreaSelectionInProgress) {
       return;
@@ -314,9 +314,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
       tipChildren: null,
     });
 
-    this.setState({ ghostHighlight: null, tip: null }, () =>
-      this.renderHighlightLayers()
-    );
+    this.setState({ tip: null }, () => this.renderHighlightLayers());
   };
 
   setTip(position: Position, inner: JSX.Element | null) {
@@ -519,13 +517,13 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         scaledPosition,
         content,
         () => this.hideTipAndSelection(),
-        () =>
-          this.setState(
-            {
-              ghostHighlight: { position: scaledPosition },
-            },
-            () => this.renderHighlightLayers()
-          )
+        () => this.renderHighlightLayers()
+        // this.setState(
+        //   {
+        //     // ghostHighlight: { position: scaledPosition },
+        //   },
+        //   () => this.renderHighlightLayers()
+        // )
       )
     );
   };
@@ -606,19 +604,21 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                     { image },
                     () => this.hideTipAndSelection(),
                     () => {
-                      console.log("setting ghost highlight", scaledPosition);
-                      this.setState(
-                        {
-                          ghostHighlight: {
-                            position: scaledPosition,
-                            content: { image },
-                          },
-                        },
-                        () => {
-                          resetSelection();
-                          this.renderHighlightLayers();
-                        }
-                      );
+                      // console.log("setting ghost highlight", scaledPosition);
+                      resetSelection();
+                      this.renderHighlightLayers();
+                      // this.setState(
+                      //   {
+                      //     // ghostHighlight: {
+                      //     //   position: scaledPosition,
+                      //     //   content: { image },
+                      //     // },
+                      //   },
+                      //   () => {
+                      //     resetSelection();
+                      //     this.renderHighlightLayers();
+                      //   }
+                      // );
                     }
                   )
                 );

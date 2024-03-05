@@ -6,7 +6,7 @@ import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
 import db from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const userName = req.nextUrl.searchParams.get("userName");
+  const userName = req.nextUrl.searchParams.get("name");
   console.log("Get user info of " + userName);
 
   if (userName) {
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       .selectFrom("User")
       .where("name", "=", userName)
       .select(["id", "name", "image"])
-      .executeTakeFirst();
+      .execute();
     return Response.json(result);
   }
 
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     .selectFrom("User")
     .where("id", "=", userId)
     .selectAll()
-    .executeTakeFirst();
+    .execute();
 
   return Response.json(result);
 }

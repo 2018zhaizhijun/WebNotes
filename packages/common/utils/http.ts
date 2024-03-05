@@ -16,19 +16,15 @@ export function queryParse(query: { [k: string]: string | undefined }): string {
 
 export async function sendRequest<T>(
   api: string,
-  params: Object,
+  params: Object
   // onSuccess: (json: Object) => void,
-  messageApi?: MessageInstance
 ): Promise<T> {
   return fetch(api, params)
     .then(async (res) => {
       if (res.status in HTTP_CODE) {
         let error_message = CODE_INFO[res.status as HTTP_CODE].message;
         console.log("err:", error_message);
-        messageApi?.open({
-          type: "error",
-          content: error_message,
-        });
+        alert(`error: ${error_message}`);
         return;
       }
 
@@ -39,10 +35,7 @@ export async function sendRequest<T>(
     })
     .catch((err) => {
       console.log("err:", err);
-      messageApi?.open({
-        type: "error",
-        content: err.message,
-      });
+      alert(`error: ${err.message}`);
     });
 }
 

@@ -22,6 +22,7 @@
     "antd": "^5.12.4",
     "axios": "^1.6.5",
     "canvas": "^2.11.2",
+    "html-react-parser": "^5.1.8",
     "kysely": "^0.27.2",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
@@ -32,6 +33,7 @@
     "pg": "^8.11.3",
     "prisma-kysely": "^1.7.1",
     "raw-loader": "^4.0.2",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-rnd": "^10.4.1",
     "styled-components": "^6.1.8",
     "vercel": "^33.3.0"

@@ -1,5 +1,7 @@
 import { TextItem } from "pdfjs-dist/types/src/display/api";
 import type { PDFDocumentProxy } from "pdfjs-dist";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf";
+import { API_HOST, queryParse } from "./http";
 
 export const extractInfo = async (pdfDocument: PDFDocumentProxy) => {
   const page = await pdfDocument.getPage(1);
@@ -38,3 +40,22 @@ export const extractInfo = async (pdfDocument: PDFDocumentProxy) => {
     abstract,
   };
 };
+
+export function getBinaryData(
+  url: string,
+  callback: (_pdfDoc: PDFDocumentProxy) => void
+) {
+  fetch(`${API_HOST}/api/pdf?${queryParse({ url })}`, {
+    method: "GET",
+  })
+    .then((response) => response.json())
+    .then((json) => {
+      return getDocument(json["arraybuffer"]).promise;
+    })
+    .then((_pdfDoc) => {
+      callback(_pdfDoc);
+    })
+    .catch((error) => {
+      console.log("Failed to fetch the PDF file: " + error.message);
+    });
+}

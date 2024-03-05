@@ -1,13 +1,13 @@
-import { Avatar, Form, Popconfirm } from "antd";
+import { Form, Popconfirm } from "antd";
 import FavouriteIcon from "common/components/FavouriteIcon";
 import { FavouriteWebsite, Website } from "common/db/types";
 import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import { signIn, useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import SearchComp from "./SearchComp";
 import FavouriteForm, {
   FavouriteFormValues,
 } from "common/components/FavouriteForm";
+import UserAct from "./UserAct";
 
 interface WebsiteHeaderProps {
   websiteInfo: Website;
@@ -15,7 +15,6 @@ interface WebsiteHeaderProps {
 
 const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
   const { title, url } = websiteInfo;
-  const { data: session, update } = useSession();
   const [favouriteInfo, setFavouriteInfo] = useState<FavouriteWebsite | null>(
     null
   );
@@ -144,17 +143,7 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
       </div>
       <div style={{ display: "flex" }}>
         <SearchComp />
-        {session ? (
-          <div>
-            <Avatar
-              shape="circle"
-              src={session.user?.image || ""}
-              style={{ margin: "0 20px" }}
-            />
-          </div>
-        ) : (
-          <button onClick={() => signIn()}>Log in</button>
-        )}
+        <UserAct />
       </div>
     </div>
   );

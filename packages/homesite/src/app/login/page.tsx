@@ -7,7 +7,7 @@ const LogIn: React.FC = () => {
   useEffect(() => {
     signIn(undefined, {
       redirect: false,
-      callbackUrl: "/",
+      callbackUrl: "/author",
     });
   }, []);
 

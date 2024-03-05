@@ -1,11 +1,11 @@
-import { Avatar } from "antd";
 import FavouriteIcon from "common/components/FavouriteIcon";
 import { FavouriteUser } from "common/db/types";
 import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import SearchComp from "./SearchComp";
 import { SimplifiedUser } from "common/db/prisma";
+import UserAct from "./UserAct";
 
 interface AuthorHeaderProps {
   authorInfo: SimplifiedUser;
@@ -82,17 +82,7 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
       </div>
       <div style={{ display: "flex" }}>
         <SearchComp />
-        {session ? (
-          <div>
-            <Avatar
-              shape="circle"
-              src={session.user?.image || ""}
-              style={{ margin: "0 20px" }}
-            />
-          </div>
-        ) : (
-          <button onClick={() => signIn()}>Log in</button>
-        )}
+        <UserAct />
       </div>
     </div>
   );

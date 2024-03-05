@@ -10,23 +10,21 @@ function AuthorHomePage({ params }: { params: { name: string } }) {
   const [authorInfo, setAuthorInfo] = useState<SimplifiedUser | null>(null);
 
   const getAuthorInfo = useCallback(() => {
-    return sendRequest<SimplifiedUser>(
+    return sendRequest<SimplifiedUser[]>(
       `${API_HOST}/api/user?${queryParse({ name: params.name })}`,
       {
         method: "GET",
       }
     ).then((json) => {
-      if (json.id) {
-        setAuthorInfo(json);
+      if (json.length > 0) {
+        setAuthorInfo(json[0]);
       }
     });
   }, [params.name, sendRequest, setAuthorInfo]);
 
   useEffect(() => {
-    if (params.name) {
-      getAuthorInfo();
-    }
-  }, [params.name, getAuthorInfo]);
+    getAuthorInfo();
+  }, [getAuthorInfo]);
 
   return (
     <SessionProvider>

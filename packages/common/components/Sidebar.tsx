@@ -5,13 +5,13 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { API_HOST } from "../utils/http";
-import { Form, Popconfirm, message } from "antd";
+import { API_HOST, sendRequest } from "../utils/http";
+import { Affix, Form, Popconfirm } from "antd";
 import FavouriteForm, { FavouriteFormValues } from "./FavouriteForm";
 import { HighlightType } from "db/prisma";
 import { FavouriteWebsite, Website } from "db/types";
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
-import { extractInfo } from "../utils/pdf-extractor";
+import { extractInfo } from "../utils/pdf";
 import FavouriteIcon from "./FavouriteIcon";
 const UserInfo = React.lazy(() => import("./UserInfo"));
 
@@ -19,21 +19,27 @@ interface SidebarProps {
   highlights: HighlightType[];
   url: string;
   pdfDocument: PDFDocumentProxy | null;
+  appendButtons?: (highlights: HighlightType[]) => React.ReactNode;
 }
 
 const updateHash = (highlight: HighlightType) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  highlights,
+  url,
+  pdfDocument,
+  appendButtons,
+}) => {
   // const [sortedHighlights, setSortedHighlights] = useState<HighlightType[]>(highlights);
   const [websiteInfo, setWebsiteInfo] = useState<Website | null>(null);
   const [favouriteInfo, setFavouriteInfo] = useState<FavouriteWebsite | null>(
     null
   );
-  const [messageApi, contextHolder] = message.useMessage();
 
   const [form] = Form.useForm<FavouriteFormValues>();
+  const [container, setContainer] = React.useState<HTMLDivElement | null>(null);
 
   // const isFavourite = useMemo(()=>{
   //   return Array.isArray(favouriteInfo)
@@ -54,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
   const getFavouriteInfo = useCallback(() => {
     if (!document.location.href.startsWith(API_HOST)) {
       chrome.runtime.sendMessage(
-        { action: "GET_FAVOURITE_WEBSITE_INFO", url, messageApi },
+        { action: "GET_FAVOURITE_WEBSITE_INFO", url },
         function (result: FavouriteWebsite[]) {
           console.log(result);
           if (result.length > 0) {
@@ -63,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
         }
       );
     }
-  }, [setFavouriteInfo, messageApi, url]);
+  }, [setFavouriteInfo, url]);
 
   const updateFavouriteInfo = useCallback(
     (websiteRename: string, tag: string, isCreate: boolean = false) => {
@@ -89,7 +95,6 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
         chrome.runtime.sendMessage(
           {
             ...params,
-            messageApi,
           },
           function (result) {
             console.log(result);
@@ -98,26 +103,26 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
         );
       }
     },
-    [getFavouriteInfo, messageApi, url]
+    [getFavouriteInfo, url]
   );
 
   const deleteFavouriteInfo = useCallback(() => {
     if (!document.location.href.startsWith(API_HOST)) {
       chrome.runtime.sendMessage(
-        { action: "DELETE_FAVOURITE_WEBSITE_INFO", url, messageApi },
+        { action: "DELETE_FAVOURITE_WEBSITE_INFO", url },
         function (result) {
           console.log(result);
           setFavouriteInfo(null);
         }
       );
     }
-  }, [setFavouriteInfo, messageApi, url]);
+  }, [setFavouriteInfo, url]);
 
   const getWebsiteInfo = useCallback(
     (onEmpty?: () => void) => {
       if (!document.location.href.startsWith(API_HOST)) {
         chrome.runtime.sendMessage(
-          { action: "GET_WEBSITE_INFO", url, messageApi },
+          { action: "GET_WEBSITE_INFO", url },
           function (result: Website[]) {
             console.log(result);
             if (result.length > 0) {
@@ -130,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
         );
       }
     },
-    [setWebsiteInfo, getFavouriteInfo, messageApi, url]
+    [setWebsiteInfo, getFavouriteInfo, url]
   );
 
   const createWebsiteInfo = useCallback(async () => {
@@ -140,7 +145,6 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
         {
           action: "CREATE_WEBSITE_INFO",
           body: JSON.stringify({ url, ...pdfInfo }),
-          messageApi,
         },
         function (result) {
           console.log(result);
@@ -148,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
         }
       );
     }
-  }, [getWebsiteInfo, messageApi, url, pdfDocument]);
+  }, [getWebsiteInfo, url, pdfDocument]);
 
   useEffect(() => {
     if (url && pdfDocument) {
@@ -181,8 +185,7 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
 
   return (
     <>
-      {contextHolder}
-      <div className="sidebar" style={{ width: "25%" }}>
+      <div className="sidebar" style={{ width: "25%" }} ref={setContainer}>
         <div className="description" style={{ padding: "1rem" }}>
           <div style={{ marginBottom: "1rem", fontSize: "1.3rem" }}>
             <span>WebNotes</span>
@@ -274,6 +277,10 @@ const Sidebar: React.FC<SidebarProps> = ({ highlights, url, pdfDocument }) => {
             </li>
           ))}
         </ul>
+
+        <Affix offsetBottom={0} target={() => container}>
+          {appendButtons?.(highlights)}
+        </Affix>
       </div>
     </>
   );

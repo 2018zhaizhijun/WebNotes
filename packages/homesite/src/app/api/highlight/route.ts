@@ -78,12 +78,19 @@ export async function POST(req: NextRequest) {
     return responseFail(HTTP_CODE.NOT_LOGGED);
   }
 
+  const highlights = (Array.isArray(request) ? request : [request]).map(
+    (item) => {
+      return {
+        ...item,
+        authorId: userId,
+        id: undefined,
+      };
+    }
+  );
+
   const result = await db
     .insertInto("Highlight")
-    .values({
-      ...request,
-      authorId: userId,
-    })
+    .values(highlights)
     .executeTakeFirst();
 
   // // const result = await prisma.highlight.create({

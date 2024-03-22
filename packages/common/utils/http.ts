@@ -1,13 +1,12 @@
-import { MessageInstance } from "antd/es/message/interface";
-import { RcFile } from "antd/es/upload";
-import { CODE_INFO, HTTP_CODE } from "./httpcode";
+import { RcFile } from 'antd/es/upload';
+import { CODE_INFO, HTTP_CODE } from './httpcode';
 
-export const API_HOST = "https://localhost:4000";
+export const API_HOST = 'https://localhost:4000';
 
 export function queryParse(query: { [k: string]: string | undefined }): string {
-  let queryText = "";
+  let queryText = '';
 
-  for (let key in query) {
+  for (const key in query) {
     query[key] && (queryText += `${key}=${query[key]}&`);
   }
 
@@ -16,14 +15,14 @@ export function queryParse(query: { [k: string]: string | undefined }): string {
 
 export async function sendRequest<T>(
   api: string,
-  params: Object
+  params: object
   // onSuccess: (json: Object) => void,
 ): Promise<T> {
   return fetch(api, params)
     .then(async (res) => {
       if (res.status in HTTP_CODE) {
-        let error_message = CODE_INFO[res.status as HTTP_CODE].message;
-        console.log("err:", error_message);
+        const error_message = CODE_INFO[res.status as HTTP_CODE].message;
+        console.log('err:', error_message);
         alert(`error: ${error_message}`);
         return;
       }
@@ -34,7 +33,7 @@ export async function sendRequest<T>(
       return json;
     })
     .catch((err) => {
-      console.log("err:", err);
+      console.log('err:', err);
       alert(`error: ${err.message}`);
     });
 }

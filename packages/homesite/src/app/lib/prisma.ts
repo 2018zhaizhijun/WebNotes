@@ -1,8 +1,8 @@
 // import { PrismaClient } from '@prisma/client';
-import { Pool } from "pg";
-import { PostgresDialect } from "kysely";
-import { DB } from "common/db/types";
-import { KyselyAuth } from "@auth/kysely-adapter";
+import { Pool } from 'pg';
+import { PostgresDialect } from 'kysely';
+import { DB } from 'common/db/types';
+import { KyselyAuth } from '@auth/kysely-adapter';
 
 // let prisma: PrismaClient;
 
@@ -19,7 +19,7 @@ import { KyselyAuth } from "@auth/kysely-adapter";
 
 let db: KyselyAuth<DB, DB>;
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === 'production') {
   // prisma = new PrismaClient();
   db = new KyselyAuth<DB, DB>({
     // Use MysqlDialect for MySQL and SqliteDialect for SQLite.
@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === "production") {
     }),
   });
 } else {
-  let globalWithDB = global as typeof globalThis & {
+  const globalWithDB = global as typeof globalThis & {
     db: KyselyAuth<DB, DB>;
   };
   if (!globalWithDB.db) {

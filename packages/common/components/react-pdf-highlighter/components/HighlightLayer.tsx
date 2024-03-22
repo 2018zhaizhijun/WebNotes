@@ -1,5 +1,7 @@
-import { viewportToScaled } from "../lib/coordinates";
-import React from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { viewportToScaled } from '../lib/coordinates';
+import React from 'react';
 import {
   IHighlight,
   LTWH,
@@ -7,7 +9,7 @@ import {
   Position,
   Scaled,
   ScaledPosition,
-} from "../types";
+} from '../types';
 
 interface HighlightLayerProps<T_HT> {
   highlightsByPage: { [pageNumber: string]: Array<T_HT> };

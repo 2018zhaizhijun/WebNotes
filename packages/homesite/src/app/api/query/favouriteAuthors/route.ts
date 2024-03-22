@@ -1,10 +1,10 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest } from "next/server";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
-import { HTTP_CODE, responseFail } from "common/utils/httpcode";
-import db from "@/lib/prisma";
+import { getServerSession } from 'next-auth/next';
+// import { NextRequest } from 'next/server';
+import { authOptions } from '@/api/auth/[...nextauth]/route';
+import { HTTP_CODE, responseFail } from 'common/utils/httpcode';
+import db from '@/lib/prisma';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
 
@@ -14,15 +14,15 @@ export async function GET(req: NextRequest) {
   }
 
   const result = await db
-    .selectFrom("User")
-    .select(["id", "name", "image"])
+    .selectFrom('User')
+    .select(['id', 'name', 'image'])
     .where(({ eb, selectFrom }) =>
       eb(
-        "id",
-        "in",
-        selectFrom("FavouriteUser")
-          .select("FavouriteUser.userId")
-          .where("FavouriteUser.followerId", "=", userId)
+        'id',
+        'in',
+        selectFrom('FavouriteUser')
+          .select('FavouriteUser.userId')
+          .where('FavouriteUser.followerId', '=', userId)
       )
     )
     .execute();

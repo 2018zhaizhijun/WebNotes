@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import "../style/Tip.css";
+import '../style/Tip.css';
 
 interface State {
   compact: boolean;
@@ -17,8 +17,8 @@ interface Props {
 export class Tip extends Component<Props, State> {
   state: State = {
     compact: true,
-    text: "",
-    emoji: "",
+    text: '',
+    emoji: '',
   };
 
   // for TipContainer
@@ -69,7 +69,7 @@ export class Tip extends Component<Props, State> {
                 }}
               />
               <div>
-                {["💩", "😱", "😍", "🔥", "😳", "⚠️"].map((_emoji) => (
+                {['💩', '😱', '😍', '🔥', '😳', '⚠️'].map((_emoji) => (
                   <label key={_emoji}>
                     <input
                       checked={emoji === _emoji}

@@ -6,7 +6,8 @@
   "scripts": {
     "dev:crx": "pnpm --filter=./packages/crx run start",
     "dev:homesite": "pnpm --filter=./packages/homesite run dev -p 4000 --experimental-https",
-    "test": "pnpm --filter packages/* run test"
+    "test": "pnpm --filter packages/* run test",
+    "prettier": "prettier --write ."
   },
   "keywords": [],
   "author": "",

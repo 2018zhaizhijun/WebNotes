@@ -1,18 +1,18 @@
-import FavouriteIcon from "common/components/FavouriteIcon";
-import { FavouriteUser } from "common/db/types";
-import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useState } from "react";
-import SearchComp from "./SearchComp";
-import { SimplifiedUser } from "common/db/prisma";
-import UserAct from "./UserAct";
+import FavouriteIcon from 'common/components/FavouriteIcon';
+import { SimplifiedUser } from 'common/db/prisma';
+import { FavouriteUser } from 'common/db/types';
+import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { useSession } from 'next-auth/react';
+import React, { useCallback, useEffect, useState } from 'react';
+import SearchComp from './SearchComp';
+import UserAct from './UserAct';
 
 interface AuthorHeaderProps {
   authorInfo: SimplifiedUser;
 }
 
 const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const [favouriteInfo, setFavouriteInfo] = useState<FavouriteUser | null>(
     null
   );
@@ -23,25 +23,25 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
         userId: authorInfo.id,
       })}`,
       {
-        method: "GET",
+        method: 'GET',
       }
     ).then((json) => {
       if (json.length > 0) {
         setFavouriteInfo(json[0]);
       }
     });
-  }, [sendRequest, authorInfo]);
+  }, [authorInfo]);
 
   const postFavouriteInfo = useCallback(() => {
     sendRequest(`${API_HOST}/api/favourite/user`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify({
         userId: authorInfo.id,
       }),
-    }).then((json) => {
+    }).then(() => {
       getFavouriteInfo();
     });
-  }, [sendRequest, authorInfo, getFavouriteInfo]);
+  }, [authorInfo, getFavouriteInfo]);
 
   const deleteFavouriteInfo = useCallback(() => {
     sendRequest(
@@ -49,12 +49,12 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
         userId: authorInfo.id,
       })}`,
       {
-        method: "DELETE",
+        method: 'DELETE',
       }
-    ).then((json) => {
+    ).then(() => {
       setFavouriteInfo(null);
     });
-  }, [sendRequest, authorInfo, setFavouriteInfo]);
+  }, [authorInfo, setFavouriteInfo]);
 
   useEffect(() => {
     if (authorInfo.id) {
@@ -64,15 +64,15 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
 
   return (
     <div className="header">
-      <div style={{ marginLeft: "20px" }}>
-        <span>{"Author / "}</span>
-        <span style={{ fontWeight: "550" }}>{authorInfo.name}</span>
+      <div style={{ marginLeft: '20px' }}>
+        <span>{'Author / '}</span>
+        <span style={{ fontWeight: '550' }}>{authorInfo.name}</span>
         {session && authorInfo.name !== session.user.name ? (
           <FavouriteIcon
             style={{
-              marginLeft: "20px",
-              cursor: "pointer",
-              color: favouriteInfo ? undefined : "transparent",
+              marginLeft: '20px',
+              cursor: 'pointer',
+              color: favouriteInfo ? undefined : 'transparent',
             }}
             onClick={() => {
               favouriteInfo ? deleteFavouriteInfo() : postFavouriteInfo();
@@ -80,7 +80,7 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
           />
         ) : null}
       </div>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: 'flex' }}>
         <SearchComp />
         <UserAct />
       </div>

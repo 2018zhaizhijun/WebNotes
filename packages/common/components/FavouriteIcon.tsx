@@ -1,7 +1,5 @@
-import Icon, {
-  CustomIconComponentProps,
-} from "@ant-design/icons/lib/components/Icon";
-import React from "react";
+import Icon from '@ant-design/icons/lib/components/Icon';
+import React from 'react';
 
 const FavouriteSvg = () => (
   <svg

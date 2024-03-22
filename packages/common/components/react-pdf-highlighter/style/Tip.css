@@ -22,7 +22,7 @@
   height: 70px;
 }
 
-.Tip__card input[type="submit"] {
+.Tip__card input[type='submit'] {
   margin-top: 5px;
   font-size: large;
 }

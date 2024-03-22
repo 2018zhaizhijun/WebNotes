@@ -1,8 +1,8 @@
-import { Button } from "antd";
-import { HighlightType } from "common/db/prisma";
-import { API_HOST, sendRequest } from "common/utils/http";
-import { useRouter } from "next/navigation";
-import React, { useCallback } from "react";
+import { Button } from 'antd';
+import { HighlightType } from 'common/db/prisma';
+import { API_HOST, sendRequest } from 'common/utils/http';
+import { useRouter } from 'next/navigation';
+import React, { useCallback } from 'react';
 
 interface SidebarButtonsProps {
   highlights: HighlightType[];
@@ -20,27 +20,27 @@ const SidebarButtons: React.FC<SidebarButtonsProps> = ({
   const copyHighlights = useCallback(
     (highlights: HighlightType[]) => {
       sendRequest(`${API_HOST}/api/highlight`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-type": "application/json; charset=UTF-8",
+          'Content-type': 'application/json; charset=UTF-8',
         },
         body: JSON.stringify(highlights),
       }).then(async () => {
-        window.open(websiteUrl, "_blank");
+        window.open(websiteUrl, '_blank');
       });
     },
-    [sendRequest, websiteUrl]
+    [websiteUrl]
   );
 
   return (
-    <div style={{ background: "rgb(249, 248, 247)", padding: "10px 0" }}>
+    <div style={{ background: 'rgb(249, 248, 247)', padding: '10px 0' }}>
       <Button type="text" onClick={() => router.push(homepageUrl)}>
         Visit Homepage
       </Button>
       <Button type="text" onClick={() => copyHighlights(highlights)}>
         Copy Notes
       </Button>
-      <Button type="text" onClick={() => window.open(websiteUrl, "_blank")}>
+      <Button type="text" onClick={() => window.open(websiteUrl, '_blank')}>
         Open in New Tab
       </Button>
     </div>

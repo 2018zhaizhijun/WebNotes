@@ -1,5 +1,5 @@
-import parse from "html-react-parser";
-import { ReactNode } from "react";
+import parse from 'html-react-parser';
+import { ReactNode } from 'react';
 
 export const groupBy = (arr: Array<{ [k: string]: any }>, prop: string) => {
   return arr.reduce((result, item) => {
@@ -16,7 +16,7 @@ export const highlightKeywords = (
   text: string,
   keywords: string
 ): ReactNode => {
-  const keywordList = keywords.split(" ");
-  const regex = new RegExp(`(${keywordList.join("|")})`, "gi");
+  const keywordList = keywords.split(' ');
+  const regex = new RegExp(`(${keywordList.join('|')})`, 'gi');
   return parse(text.replace(regex, '<span style="color: red">$1</span>'));
 };

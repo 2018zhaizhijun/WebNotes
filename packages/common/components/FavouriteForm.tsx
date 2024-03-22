@@ -1,5 +1,5 @@
-import React from "react";
-import { Form, FormInstance, Input } from "antd";
+import React from 'react';
+import { Form, FormInstance, Input } from 'antd';
 
 interface FavouriteFormProps {
   form: FormInstance;
@@ -22,17 +22,17 @@ const FavouriteForm: React.FC<FavouriteFormProps> = ({
       labelCol={{ span: 6 }}
       wrapperCol={{ span: 18 }}
       layout="horizontal"
-      style={{ maxWidth: 600, paddingTop: "14px" }}
+      style={{ maxWidth: 600, paddingTop: '14px' }}
       initialValues={initialValues}
     >
       <Form.Item
         label="Name"
         name="websiteRename"
-        dependencies={["websiteRename"]}
+        dependencies={['websiteRename']}
       >
         <Input />
       </Form.Item>
-      <Form.Item label="Tag" name="tag" dependencies={["tag"]}>
+      <Form.Item label="Tag" name="tag" dependencies={['tag']}>
         <Input />
       </Form.Item>
     </Form>

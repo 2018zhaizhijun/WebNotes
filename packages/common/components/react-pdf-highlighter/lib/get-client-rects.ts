@@ -1,6 +1,6 @@
-import type { LTWHP, Page } from "../types.js";
+import type { LTWHP, Page } from '../types.js';
 
-import optimizeClientRects from "./optimize-client-rects";
+import optimizeClientRects from './optimize-client-rects';
 
 const isClientRectInsidePageRect = (clientRect: DOMRect, pageRect: DOMRect) => {
   if (clientRect.top < pageRect.top) {
@@ -22,7 +22,7 @@ const isClientRectInsidePageRect = (clientRect: DOMRect, pageRect: DOMRect) => {
 const getClientRects = (
   range: Range,
   pages: Page[],
-  shouldOptimize: boolean = true
+  shouldOptimize = true
 ): Array<LTWHP> => {
   const clientRects = Array.from(range.getClientRects());
 

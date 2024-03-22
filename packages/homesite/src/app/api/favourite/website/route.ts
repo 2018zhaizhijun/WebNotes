@@ -1,13 +1,13 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest } from "next/server";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest } from 'next/server';
+import { authOptions } from '@/api/auth/[...nextauth]/route';
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
-import db from "@/lib/prisma";
+import { HTTP_CODE, responseFail, toObject } from 'common/utils/httpcode';
+import db from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get("url");
-  console.log("Get favourite info of " + url);
+  const url = req.nextUrl.searchParams.get('url');
+  console.log('Get favourite info of ' + url);
 
   const session = await getServerSession(authOptions);
   const followerId = session?.user?.id;
@@ -18,11 +18,11 @@ export async function GET(req: NextRequest) {
   }
 
   let query = db
-    .selectFrom("FavouriteWebsite")
-    .where("followerId", "=", followerId);
+    .selectFrom('FavouriteWebsite')
+    .where('followerId', '=', followerId);
 
   if (url) {
-    query = query.where("websiteUrl", "=", url);
+    query = query.where('websiteUrl', '=', url);
   }
   const result = await query.selectAll().execute();
 
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const request = await req.json();
-  console.log("Post favourite info:");
+  console.log('Post favourite info:');
   console.log(request);
 
   const session = await getServerSession(authOptions);
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   const result = await db
-    .insertInto("FavouriteWebsite")
+    .insertInto('FavouriteWebsite')
     .values({
       ...request,
       followerId: followerId,
@@ -54,9 +54,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get("url");
+  const url = req.nextUrl.searchParams.get('url');
   const request = await req.json();
-  console.log("Update favourite info:");
+  console.log('Update favourite info:');
   console.log(request);
 
   const session = await getServerSession(authOptions);
@@ -68,20 +68,20 @@ export async function PUT(req: NextRequest) {
   }
 
   const result = await db
-    .updateTable("FavouriteWebsite")
+    .updateTable('FavouriteWebsite')
     .set({
       ...request,
     })
-    .where("followerId", "=", followerId)
-    .where("websiteUrl", "=", url)
+    .where('followerId', '=', followerId)
+    .where('websiteUrl', '=', url)
     .executeTakeFirst();
 
   return Response.json(toObject(result));
 }
 
 export async function DELETE(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get("url");
-  console.log("Delete favourite info of " + url);
+  const url = req.nextUrl.searchParams.get('url');
+  console.log('Delete favourite info of ' + url);
 
   const session = await getServerSession(authOptions);
   const followerId = session?.user?.id;
@@ -92,9 +92,9 @@ export async function DELETE(req: NextRequest) {
   }
 
   const result = await db
-    .deleteFrom("FavouriteWebsite")
-    .where("followerId", "=", followerId)
-    .where("websiteUrl", "=", url)
+    .deleteFrom('FavouriteWebsite')
+    .where('followerId', '=', followerId)
+    .where('websiteUrl', '=', url)
     .executeTakeFirst();
 
   return Response.json(toObject(result));

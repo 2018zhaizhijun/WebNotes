@@ -1,4 +1,5 @@
-import { Page } from "../types";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Page } from '../types';
 
 export const getDocument = (elm: any): Document =>
   (elm || {}).ownerDocument || document;
@@ -13,7 +14,7 @@ export const isHTMLCanvasElement = (elm: any) =>
 export const asElement = (x: any): HTMLElement => x;
 
 export const getPageFromElement = (target: HTMLElement): Page | null => {
-  const node = asElement(target.closest(".page"));
+  const node = asElement(target.closest('.page'));
 
   if (!node || !isHTMLElement(node)) {
     return null;
@@ -76,7 +77,7 @@ export const findOrCreateContainerLayer = (
   let layer = container.querySelector(`.${className}`);
 
   if (!layer) {
-    layer = doc.createElement("div");
+    layer = doc.createElement('div');
     layer.className = className;
     container.appendChild(layer);
   }

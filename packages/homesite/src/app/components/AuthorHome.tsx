@@ -1,14 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import AuthorHeader from "./AuthorHeader";
-import { Menu, MenuProps } from "antd";
-import PDF from "common/components/PDF";
-import { Website } from "common/db/types";
-import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import { groupBy } from "@/lib/utils";
-import FavouriteIcon from "common/components/FavouriteIcon";
-import { HighlightType, SimplifiedUser } from "common/db/prisma";
-import { useSession } from "next-auth/react";
-import SidebarButtons from "./SidebarButtons";
+import { groupBy } from '@/lib/utils';
+import { Menu } from 'antd';
+import { ItemType } from 'antd/es/menu/hooks/useItems';
+import FavouriteIcon from 'common/components/FavouriteIcon';
+import PDF from 'common/components/PDF';
+import { HighlightType, SimplifiedUser } from 'common/db/prisma';
+import { Website } from 'common/db/types';
+import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { useSession } from 'next-auth/react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import AuthorHeader from './AuthorHeader';
+import SidebarButtons from './SidebarButtons';
 
 interface AuthorHomeProps {
   authorInfo: SimplifiedUser;
@@ -19,8 +20,10 @@ type NotedWebsitesType = {
   result_favourite: Array<Website & { rename: string; tag: string }>;
 };
 
+type CustomItemType = Exclude<ItemType, null>[];
+
 const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const [activatedUrl, setActivatedUrl] = useState<string>();
   const [notedWebsites, setNotedWebsites] = useState<NotedWebsitesType>({
     result_highlight: [],
@@ -33,39 +36,39 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
         authorId: authorInfo.id,
       })}`,
       {
-        method: "GET",
+        method: 'GET',
       }
     ).then((json) => {
       if (json.result_highlight || json.result_favourite) {
         setNotedWebsites(json);
       }
     });
-  }, [authorInfo, sendRequest, setNotedWebsites]);
+  }, [authorInfo, setNotedWebsites]);
 
-  const items: MenuProps["items"] = useMemo(() => {
-    const result_favourite = groupBy(notedWebsites.result_favourite, "tag");
-    const favourite_items: MenuProps["items"] = Object.keys(
-      result_favourite
-    ).map((key) => {
-      return {
-        label: key,
-        key: key,
-        icon: <FavouriteIcon />,
-        children: result_favourite[key].map(
-          (item: NotedWebsitesType["result_favourite"][number]) => {
-            return { label: item.rename, key: `${item.url} ${item.id}` };
-          }
-        ),
-      };
-    });
+  const items = useMemo(() => {
+    const result_favourite = groupBy(notedWebsites.result_favourite, 'tag');
+    const favourite_items: CustomItemType = Object.keys(result_favourite).map(
+      (key) => {
+        return {
+          label: key,
+          key: key,
+          icon: <FavouriteIcon />,
+          children: result_favourite[key].map(
+            (item: NotedWebsitesType['result_favourite'][number]) => {
+              return { label: item.rename, key: `${item.url} ${item.id}` };
+            }
+          ),
+        };
+      }
+    );
 
-    const highlight_items: MenuProps["items"] =
+    const highlight_items: CustomItemType =
       notedWebsites.result_highlight.length > 0
         ? [
             {
-              label: "Highlighted",
-              key: "Highlighted",
-              type: "group",
+              label: 'Highlighted',
+              key: 'Highlighted',
+              type: 'group',
               children: notedWebsites.result_highlight.map((item) => {
                 return { label: item.title, key: `${item.url} ${item.id}` };
               }),
@@ -103,17 +106,17 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
             }}
             style={{ width: 256 }}
             defaultOpenKeys={[
-              items[0]?.children ? (items[0]?.key as string) : "",
+              items[0]?.children ? (items[0]?.key as string) : '',
             ]}
             mode="inline"
             items={items}
             multiple={false}
-            selectedKeys={[activatedUrl || ""]}
+            selectedKeys={[activatedUrl || '']}
           />
         ) : null}
         {activatedUrl && (
           <PDF
-            url={activatedUrl.split(" ")[0]}
+            url={activatedUrl.split(' ')[0]}
             authorId={authorInfo.id}
             sidebarPosition="right"
             readOnly={authorInfo.id !== session?.user?.id}
@@ -121,8 +124,8 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
               return (
                 <SidebarButtons
                   highlights={highlights}
-                  homepageUrl={`/website/${activatedUrl.split(" ")[1]}`}
-                  websiteUrl={activatedUrl.split(" ")[0]}
+                  homepageUrl={`/website/${activatedUrl.split(' ')[1]}`}
+                  websiteUrl={activatedUrl.split(' ')[0]}
                 />
               );
             }}

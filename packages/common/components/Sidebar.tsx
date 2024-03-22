@@ -1,19 +1,13 @@
-import React, {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { API_HOST, sendRequest } from "../utils/http";
-import { Affix, Form, Popconfirm } from "antd";
-import FavouriteForm, { FavouriteFormValues } from "./FavouriteForm";
-import { HighlightType } from "db/prisma";
-import { FavouriteWebsite, Website } from "db/types";
-import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
-import { extractInfo } from "../utils/pdf";
-import FavouriteIcon from "./FavouriteIcon";
-const UserInfo = React.lazy(() => import("./UserInfo"));
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { API_HOST } from '../utils/http';
+import { Affix, Form, Image, Popconfirm } from 'antd';
+import FavouriteForm, { FavouriteFormValues } from './FavouriteForm';
+import { HighlightType } from 'db/prisma';
+import { FavouriteWebsite, Website } from 'db/types';
+import { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
+import { extractInfo } from '../utils/pdf';
+import FavouriteIcon from './FavouriteIcon';
+// const UserInfo = React.lazy(() => import('./UserInfo'));
 
 interface SidebarProps {
   highlights: HighlightType[];
@@ -60,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const getFavouriteInfo = useCallback(() => {
     if (!document.location.href.startsWith(API_HOST)) {
       chrome.runtime.sendMessage(
-        { action: "GET_FAVOURITE_WEBSITE_INFO", url },
+        { action: 'GET_FAVOURITE_WEBSITE_INFO', url },
         function (result: FavouriteWebsite[]) {
           console.log(result);
           if (result.length > 0) {
@@ -72,11 +66,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, [setFavouriteInfo, url]);
 
   const updateFavouriteInfo = useCallback(
-    (websiteRename: string, tag: string, isCreate: boolean = false) => {
+    (websiteRename: string, tag: string, isCreate = false) => {
       if (!document.location.href.startsWith(API_HOST)) {
         const params = isCreate
           ? {
-              action: "CREATE_FAVOURITE_WEBSITE_INFO",
+              action: 'CREATE_FAVOURITE_WEBSITE_INFO',
               body: JSON.stringify({
                 websiteUrl: url,
                 websiteRename,
@@ -84,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               }),
             }
           : {
-              action: "UPDATE_FAVOURITE_WEBSITE_INFO",
+              action: 'UPDATE_FAVOURITE_WEBSITE_INFO',
               url,
               body: JSON.stringify({
                 websiteRename,
@@ -109,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const deleteFavouriteInfo = useCallback(() => {
     if (!document.location.href.startsWith(API_HOST)) {
       chrome.runtime.sendMessage(
-        { action: "DELETE_FAVOURITE_WEBSITE_INFO", url },
+        { action: 'DELETE_FAVOURITE_WEBSITE_INFO', url },
         function (result) {
           console.log(result);
           setFavouriteInfo(null);
@@ -122,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     (onEmpty?: () => void) => {
       if (!document.location.href.startsWith(API_HOST)) {
         chrome.runtime.sendMessage(
-          { action: "GET_WEBSITE_INFO", url },
+          { action: 'GET_WEBSITE_INFO', url },
           function (result: Website[]) {
             console.log(result);
             if (result.length > 0) {
@@ -139,11 +133,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 
   const createWebsiteInfo = useCallback(async () => {
-    if (!document.location.href.startsWith(API_HOST)) {
-      const pdfInfo = await extractInfo(pdfDocument!);
+    if (!document.location.href.startsWith(API_HOST) && pdfDocument) {
+      const pdfInfo = await extractInfo(pdfDocument);
       chrome.runtime.sendMessage(
         {
-          action: "CREATE_WEBSITE_INFO",
+          action: 'CREATE_WEBSITE_INFO',
           body: JSON.stringify({ url, ...pdfInfo }),
         },
         function (result) {
@@ -169,7 +163,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         updateFavouriteInfo(values.websiteRename, values.tag, !favouriteInfo);
       })
       .catch((info) => {
-        console.log("Validate Failed:", info);
+        console.log('Validate Failed:', info);
       });
   }, [form, updateFavouriteInfo, favouriteInfo]);
 
@@ -177,7 +171,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (websiteInfo) {
       return {
         websiteRename: websiteInfo.title || websiteInfo.url,
-        tag: "default",
+        tag: 'default',
       };
     }
     return {};
@@ -185,9 +179,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <div className="sidebar" style={{ width: "25%" }} ref={setContainer}>
-        <div className="description" style={{ padding: "1rem" }}>
-          <div style={{ marginBottom: "1rem", fontSize: "1.3rem" }}>
+      <div className="sidebar" style={{ width: '25%' }} ref={setContainer}>
+        <div className="description" style={{ padding: '1rem' }}>
+          <div style={{ marginBottom: '1rem', fontSize: '1.3rem' }}>
             <span>WebNotes</span>
             {!document.location.href.startsWith(API_HOST) && websiteInfo ? (
               <Popconfirm
@@ -199,8 +193,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                     initialValues={{
                       websiteRename:
                         favouriteInfo?.websiteRename ||
-                        initialValues.websiteRename!,
-                      tag: favouriteInfo?.tag || initialValues.tag!,
+                        initialValues.websiteRename ||
+                        '',
+                      tag: favouriteInfo?.tag || initialValues.tag || '',
                     }}
                   />
                 }
@@ -216,10 +211,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 <FavouriteIcon
                   style={{
-                    cursor: "pointer",
-                    color: favouriteInfo ? undefined : "transparent",
-                    marginLeft: "20px",
-                    padding: "6px",
+                    cursor: 'pointer',
+                    color: favouriteInfo ? undefined : 'transparent',
+                    marginLeft: '20px',
+                    padding: '6px',
                   }}
                 />
               </Popconfirm>
@@ -258,16 +253,16 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div>
                 <strong>{highlight.comment?.text}</strong>
                 {highlight.content.text ? (
-                  <blockquote style={{ marginTop: "0.5rem" }}>
+                  <blockquote style={{ marginTop: '0.5rem' }}>
                     {`${highlight.content.text.slice(0, 90).trim()}…`}
                   </blockquote>
                 ) : null}
                 {highlight.content.image ? (
                   <div
                     className="highlight__image"
-                    style={{ marginTop: "0.5rem" }}
+                    style={{ marginTop: '0.5rem' }}
                   >
-                    <img src={highlight.content.image} alt={"Screenshot"} />
+                    <Image src={highlight.content.image} alt={'Screenshot'} />
                   </div>
                 ) : null}
               </div>

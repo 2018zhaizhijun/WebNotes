@@ -1,0 +1,7 @@
+**/node_modules/
+.vercel
+
+homesite/.next
+homesite/certificates
+
+crx/build

@@ -1,9 +1,9 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { asElement, isHTMLElement } from "../lib/pdfjs-dom";
-import "../style/MouseSelection.css";
+import { asElement, isHTMLElement } from '../lib/pdfjs-dom';
+import '../style/MouseSelection.css';
 
-import type { LTWH } from "../types.js";
+import type { LTWH } from '../types.js';
 
 interface Coords {
   x: number;
@@ -95,7 +95,7 @@ class MouseSelection extends Component<Props, State> {
       };
     };
 
-    container.addEventListener("mousemove", (event: MouseEvent) => {
+    container.addEventListener('mousemove', (event: MouseEvent) => {
       const { start, locked } = this.state;
 
       if (!start || locked) {
@@ -108,7 +108,7 @@ class MouseSelection extends Component<Props, State> {
       });
     });
 
-    container.addEventListener("mousedown", (event: MouseEvent) => {
+    container.addEventListener('mousedown', (event: MouseEvent) => {
       if (!shouldStart(event)) {
         this.reset();
         return;
@@ -130,7 +130,7 @@ class MouseSelection extends Component<Props, State> {
       const onMouseUp = (event: MouseEvent): void => {
         // emulate listen once
         event.currentTarget?.removeEventListener(
-          "mouseup",
+          'mouseup',
           onMouseUp as EventListener
         );
 
@@ -176,7 +176,7 @@ class MouseSelection extends Component<Props, State> {
 
       const { ownerDocument: doc } = container;
       if (doc.body) {
-        doc.body.addEventListener("mouseup", onMouseUp);
+        doc.body.addEventListener('mouseup', onMouseUp);
       }
     });
   }

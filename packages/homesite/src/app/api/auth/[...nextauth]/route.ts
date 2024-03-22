@@ -1,13 +1,13 @@
-import NextAuth from "next-auth";
-import type { NextAuthOptions, Theme } from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { KyselyAdapter } from "@auth/kysely-adapter";
-import EmailProvider from "next-auth/providers/email";
-import GitHubProvider from "next-auth/providers/github";
-import GoogleProvider from "next-auth/providers/google";
+import NextAuth from 'next-auth';
+import type { NextAuthOptions, Theme } from 'next-auth';
+// import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import { KyselyAdapter } from '@auth/kysely-adapter';
+import EmailProvider from 'next-auth/providers/email';
+import GitHubProvider from 'next-auth/providers/github';
+import GoogleProvider from 'next-auth/providers/google';
 // import prisma from "@/lib/prisma";
-import db from "@/lib/prisma";
-import { createTransport } from "nodemailer";
+import db from '@/lib/prisma';
+import { createTransport } from 'nodemailer';
 
 function text({ url, host }: { url: string; host: string }) {
   return `Sign in to ${host}\n${url}\n\n`;
@@ -16,17 +16,17 @@ function text({ url, host }: { url: string; host: string }) {
 function html(params: { url: string; host: string; theme: Theme }) {
   const { url, host, theme } = params;
 
-  const escapedHost = host.replace(/\./g, "&#8203;.");
+  const escapedHost = host.replace(/\./g, '&#8203;.');
 
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-  const brandColor = theme.brandColor || "#346df1";
+  const brandColor = theme.brandColor || '#346df1';
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-  const buttonText = theme.buttonText || "#fff";
+  const buttonText = theme.buttonText || '#fff';
 
   const color = {
-    background: "#f9f9f9",
-    text: "#444",
-    mainBackground: "#fff",
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
     buttonBackground: brandColor,
     buttonBorder: brandColor,
     buttonText,
@@ -93,7 +93,7 @@ export const authOptions: NextAuthOptions = {
         });
         const failed = result.rejected.concat(result.pending).filter(Boolean);
         if (failed.length) {
-          throw new Error(`Email (${failed.join(", ")}) could not be sent`);
+          throw new Error(`Email (${failed.join(', ')}) could not be sent`);
         }
       },
     }),
@@ -109,9 +109,9 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
         },
       },
       httpOptions: {

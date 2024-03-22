@@ -1,12 +1,12 @@
-import { Avatar, Divider, Drawer, Modal } from "antd";
-import { signIn, signOut, useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useState } from "react";
-import { EditOutlined, HeartOutlined, LogoutOutlined } from "@ant-design/icons";
-import UserModal from "common/components/UserModal";
-import styled from "styled-components";
-import { API_HOST, sendRequest } from "common/utils/http";
-import { SimplifiedUser } from "common/db/prisma";
-import UserDisplay from "./UserDisplay";
+import { Avatar, Divider, Drawer, Modal } from 'antd';
+import { signIn, signOut, useSession } from 'next-auth/react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { EditOutlined, HeartOutlined, LogoutOutlined } from '@ant-design/icons';
+import UserModal from 'common/components/UserModal';
+import styled from 'styled-components';
+import { API_HOST, sendRequest } from 'common/utils/http';
+import { SimplifiedUser } from 'common/db/prisma';
+import UserDisplay from './UserDisplay';
 
 const StyledDiv = styled.div`
   cursor: pointer;
@@ -33,11 +33,11 @@ const UserAct: React.FC = () => {
 
   const getFavouriteInfo = useCallback(() => {
     sendRequest<SimplifiedUser[]>(`${API_HOST}/api/query/favouriteAuthors`, {
-      method: "GET",
+      method: 'GET',
     }).then((json) => {
       setFavouriteUsers(json);
     });
-  }, [sendRequest, setFavouriteUsers]);
+  }, [setFavouriteUsers]);
 
   useEffect(() => {
     getFavouriteInfo();
@@ -50,8 +50,8 @@ const UserAct: React.FC = () => {
           <button onClick={() => setDrawerOpen(true)}>
             <Avatar
               shape="circle"
-              src={session.user?.image || ""}
-              style={{ margin: "0 20px" }}
+              src={session.user?.image || ''}
+              style={{ margin: '0 20px' }}
             />
           </button>
           <Drawer
@@ -59,10 +59,10 @@ const UserAct: React.FC = () => {
               <div>
                 <Avatar
                   shape="circle"
-                  src={session.user?.image || ""}
-                  style={{ marginRight: "10px" }}
+                  src={session.user?.image || ''}
+                  style={{ marginRight: '10px' }}
                 />
-                <text>{session.user?.name || "Anonymous User"}</text>
+                <text>{session.user?.name || 'Anonymous User'}</text>
               </div>
             }
             onClose={() => setDrawerOpen(false)}
@@ -100,9 +100,9 @@ const UserAct: React.FC = () => {
               onCancel={() => setFavouriteModalOpen(false)}
               footer={null}
             >
-              <div style={{ paddingTop: "16px" }}>
+              <div style={{ paddingTop: '16px' }}>
                 {favouriteUsers?.map((item) => {
-                  return <UserDisplay user={item} />;
+                  return <UserDisplay key={item.id} user={item} />;
                 })}
               </div>
             </Modal>

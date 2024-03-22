@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import logo from '../../assets/img/logo.svg';
 import './Popup.css';
-import { Avatar, Popconfirm } from 'antd';
+import { Avatar, Image, Popconfirm } from 'antd';
 import UserModal from 'common/components/UserModal';
 import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
 import { API_HOST } from 'common/utils/http';
@@ -35,7 +35,7 @@ const Popup: React.FC = () => {
     <div className="App">
       <header className="App-header">
         <div>
-          <img src={logo} className="App-logo" alt="logo" />
+          <Image src={logo} className="App-logo" alt="logo" />
           {/* <a
           className="App-link"
           href="https://reactjs.org"

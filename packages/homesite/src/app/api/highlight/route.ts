@@ -1,27 +1,27 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest } from "next/server";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest } from 'next/server';
+import { authOptions } from '@/api/auth/[...nextauth]/route';
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
-import db from "@/lib/prisma";
-import { sql } from "kysely";
+import { HTTP_CODE, responseFail, toObject } from 'common/utils/httpcode';
+import db from '@/lib/prisma';
+import { sql } from 'kysely';
 
 export async function GET(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get("url");
-  console.log("Get highlights of " + url);
+  const url = req.nextUrl.searchParams.get('url');
+  console.log('Get highlights of ' + url);
 
-  let query = db.selectFrom("Highlight");
+  let query = db.selectFrom('Highlight');
 
-  const authorId = req.nextUrl.searchParams.get("authorId");
+  const authorId = req.nextUrl.searchParams.get('authorId');
   if (authorId) {
-    query = query.where("authorId", "=", authorId);
-    query = query.where("privacy", "=", false);
+    query = query.where('authorId', '=', authorId);
+    query = query.where('privacy', '=', false);
   } else {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
     if (userId) {
-      query = query.where("authorId", "=", userId);
+      query = query.where('authorId', '=', userId);
     }
   }
 
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   // }
 
   if (url) {
-    query = query.where("url", "=", url);
+    query = query.where('url', '=', url);
   }
 
   query = query.orderBy(
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const request = await req.json();
-  console.log("Post highlight:");
+  console.log('Post highlight:');
   console.log(request);
 
   const session = await getServerSession(authOptions);
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
   );
 
   const result = await db
-    .insertInto("Highlight")
+    .insertInto('Highlight')
     .values(highlights)
     .executeTakeFirst();
 

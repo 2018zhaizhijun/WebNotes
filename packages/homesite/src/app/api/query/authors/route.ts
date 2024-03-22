@@ -1,13 +1,13 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest } from "next/server";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+// import { getServerSession } from 'next-auth/next';
+import { NextRequest } from 'next/server';
+// import { authOptions } from '@/api/auth/[...nextauth]/route';
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
-import db from "@/lib/prisma";
+// import { HTTP_CODE, responseFail, toObject } from 'common/utils/httpcode';
+import db from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get("url");
-  console.log("Get author info for website " + url);
+  const url = req.nextUrl.searchParams.get('url');
+  console.log('Get author info for website ' + url);
 
   //   const session = await getServerSession(authOptions);
   //   const userId = session?.user?.id;
@@ -28,15 +28,15 @@ export async function GET(req: NextRequest) {
   }
 
   const result = await db
-    .selectFrom("User")
-    .select(["id", "name", "image"])
+    .selectFrom('User')
+    .select(['id', 'name', 'image'])
     .where(({ eb, selectFrom }) =>
       eb(
-        "id",
-        "in",
-        selectFrom("Highlight")
-          .select("Highlight.authorId")
-          .where("Highlight.url", "=", url)
+        'id',
+        'in',
+        selectFrom('Highlight')
+          .select('Highlight.authorId')
+          .where('Highlight.url', '=', url)
       )
     )
     .execute();

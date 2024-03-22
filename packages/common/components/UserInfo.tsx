@@ -1,9 +1,9 @@
-import { EditOutlined, LogoutOutlined } from "@ant-design/icons";
-import { Avatar, Popconfirm } from "antd";
-import { signIn, signOut, useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
-import UserModal from "./UserModal";
-import styled from "styled-components";
+import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Avatar, Popconfirm } from 'antd';
+import { signIn, signOut, useSession } from 'next-auth/react';
+import React, { useEffect, useState } from 'react';
+import UserModal from './UserModal';
+import styled from 'styled-components';
 
 export const StyledDiv = styled.div`
   display: inline-block;
@@ -21,7 +21,7 @@ const UserInfo: React.FC = () => {
 
   useEffect(() => {
     if (session) {
-      console.log("Logged info:", session);
+      console.log('Logged info:', session);
     }
   }, [session]);
 
@@ -31,13 +31,13 @@ const UserInfo: React.FC = () => {
         <div>
           <Avatar
             shape="circle"
-            src={session.user?.image || ""}
-            style={{ marginRight: "10px" }}
+            src={session.user?.image || ''}
+            style={{ marginRight: '10px' }}
           />
-          <text>{session.user?.name || "Anonymous User"}</text>
+          <text>{session.user?.name || 'Anonymous User'}</text>
           <StyledDiv
             onClick={() => setOpen(true)}
-            style={{ marginLeft: "20px" }}
+            style={{ marginLeft: '20px' }}
           >
             <EditOutlined />
           </StyledDiv>

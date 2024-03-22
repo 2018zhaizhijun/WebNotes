@@ -1,13 +1,13 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest } from "next/server";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+// import { getServerSession } from 'next-auth/next';
+import { NextRequest } from 'next/server';
+// import { authOptions } from '@/api/auth/[...nextauth]/route';
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
-import db from "@/lib/prisma";
+import { HTTP_CODE, responseFail } from 'common/utils/httpcode';
+import db from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
-  const authorId = req.nextUrl.searchParams.get("authorId");
-  console.log("Get website info for " + authorId);
+  const authorId = req.nextUrl.searchParams.get('authorId');
+  console.log('Get website info for ' + authorId);
 
   //   const session = await getServerSession(authOptions);
   //   const userId = session?.user?.id;
@@ -28,34 +28,34 @@ export async function GET(req: NextRequest) {
   }
 
   const result_favourite = await db
-    .selectFrom("Website")
-    .innerJoin("FavouriteWebsite", "FavouriteWebsite.websiteUrl", "Website.url")
+    .selectFrom('Website')
+    .innerJoin('FavouriteWebsite', 'FavouriteWebsite.websiteUrl', 'Website.url')
     .select([
-      "Website.id as id",
-      "Website.url as url",
-      "Website.title as title",
-      "Website.abstract as abstract",
-      "FavouriteWebsite.websiteRename as rename",
-      "FavouriteWebsite.tag as tag",
+      'Website.id as id',
+      'Website.url as url',
+      'Website.title as title',
+      'Website.abstract as abstract',
+      'FavouriteWebsite.websiteRename as rename',
+      'FavouriteWebsite.tag as tag',
     ])
-    .where("FavouriteWebsite.followerId", "=", authorId)
+    .where('FavouriteWebsite.followerId', '=', authorId)
     .execute();
 
   let query = db
-    .selectFrom("Website")
+    .selectFrom('Website')
     .where(({ eb, selectFrom }) =>
       eb(
-        "url",
-        "in",
-        selectFrom("Highlight")
-          .select("Highlight.url")
-          .where("Highlight.authorId", "=", authorId)
+        'url',
+        'in',
+        selectFrom('Highlight')
+          .select('Highlight.url')
+          .where('Highlight.authorId', '=', authorId)
       )
     );
   if (result_favourite.length > 0) {
     query = query.where(
-      "url",
-      "not in",
+      'url',
+      'not in',
       result_favourite.map((w) => w.url)
     );
   }

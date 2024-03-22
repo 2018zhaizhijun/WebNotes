@@ -1,8 +1,8 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf";
-import type { PDFDocumentProxy } from "pdfjs-dist";
-import { getBinaryData } from "../../../utils/pdf";
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { getBinaryData } from '../../../utils/pdf';
 
 interface Props {
   /** See `GlobalWorkerOptionsType`. */
@@ -32,7 +32,7 @@ export class PdfLoader extends Component<Props, State> {
   };
 
   static defaultProps = {
-    workerSrc: "https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js",
+    workerSrc: 'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js',
   };
 
   documentRef = React.createRef<HTMLElement>();
@@ -55,7 +55,7 @@ export class PdfLoader extends Component<Props, State> {
     }
   }
 
-  componentDidCatch(error: Error, info?: any) {
+  componentDidCatch(error: Error) {
     const { onError } = this.props;
 
     if (onError) {
@@ -78,7 +78,7 @@ export class PdfLoader extends Component<Props, State> {
     this.setState({ error: null });
     this.props.setPdfDocument(null);
 
-    if (typeof workerSrc === "string") {
+    if (typeof workerSrc === 'string') {
       GlobalWorkerOptions.workerSrc = workerSrc;
     }
 

@@ -6,27 +6,25 @@ import {
   List,
   Modal,
   Skeleton,
-} from "antd";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { CheckboxGroupProps } from "antd/es/checkbox";
-import { CheckboxValueType } from "antd/es/checkbox/Group";
-import { SearchProps } from "antd/es/input/Search";
-import { SimplifiedUser } from "common/db/prisma";
-import { Website } from "common/db/types";
-import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import React, { useCallback, useMemo, useState } from "react";
-import UserDisplay from "./UserDisplay";
-import { ExportOutlined } from "@ant-design/icons";
-import { highlightKeywords } from "@/lib/utils";
+} from 'antd';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { CheckboxGroupProps } from 'antd/es/checkbox';
+import { CheckboxValueType } from 'antd/es/checkbox/Group';
+import { SearchProps } from 'antd/es/input/Search';
+import { SimplifiedUser } from 'common/db/prisma';
+import { Website } from 'common/db/types';
+import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import React, { useCallback, useMemo, useState } from 'react';
+import UserDisplay from './UserDisplay';
+import { ExportOutlined } from '@ant-design/icons';
+import { highlightKeywords } from '@/lib/utils';
 
 const { Search } = Input;
 
-interface SearchCompProps {}
-
 enum SearchSource {
-  USER = "User",
-  URL = "Url",
-  KEYWORD = "Keyword",
+  USER = 'User',
+  URL = 'Url',
+  KEYWORD = 'Keyword',
 }
 
 interface SearchResultType {
@@ -36,15 +34,15 @@ interface SearchResultType {
   keyword_result_total?: number;
 }
 
-const SearchComp: React.FC<SearchCompProps> = () => {
+const SearchComp: React.FC = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [open, setOpen] = useState(false);
   const [checkedValues, setCheckedValues] = useState<string[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [searchResult, setSearchResult] = useState<SearchResultType>({});
   const [loadingMoreData, setLoadingMoreData] = useState(false);
 
-  const onSearch: SearchProps["onSearch"] = useCallback(
+  const onSearch: SearchProps['onSearch'] = useCallback(
     (value: string) => {
       setLoadingSearch(true);
 
@@ -54,7 +52,7 @@ const SearchComp: React.FC<SearchCompProps> = () => {
           sendRequest<SimplifiedUser[]>(
             `${API_HOST}/api/search/authors?${queryParse({ regexp: value })}`,
             {
-              method: "GET",
+              method: 'GET',
             }
           )
         );
@@ -73,7 +71,7 @@ const SearchComp: React.FC<SearchCompProps> = () => {
               keyword_regexp: includes_keyword ? value : undefined,
             })}`,
             {
-              method: "GET",
+              method: 'GET',
             }
           )
         );
@@ -97,7 +95,7 @@ const SearchComp: React.FC<SearchCompProps> = () => {
           setLoadingSearch(false);
         });
     },
-    [checkedValues, sendRequest, setSearchResult, setLoadingSearch]
+    [checkedValues, setSearchResult, setLoadingSearch]
   );
 
   const loadMoreData = useCallback(() => {
@@ -115,7 +113,7 @@ const SearchComp: React.FC<SearchCompProps> = () => {
         offset: String(searchResult.keyword_result?.length || 0),
       })}`,
       {
-        method: "GET",
+        method: 'GET',
       }
     )
       .then((value) => {
@@ -136,12 +134,11 @@ const SearchComp: React.FC<SearchCompProps> = () => {
     checkedValues,
     searchResult,
     input,
-    sendRequest,
     setLoadingMoreData,
     setSearchResult,
   ]);
 
-  const onChange: CheckboxGroupProps["onChange"] = useCallback(
+  const onChange: CheckboxGroupProps['onChange'] = useCallback(
     (checkedValues: CheckboxValueType[]) => {
       setCheckedValues(checkedValues as string[]);
     },
@@ -156,21 +153,21 @@ const SearchComp: React.FC<SearchCompProps> = () => {
       return {
         key: String(item.id),
         label: (
-          <div style={{ fontWeight: "480" }}>
-            {highlightKeywords(item.title || "", input)}
+          <div style={{ fontWeight: '480' }}>
+            {highlightKeywords(item.title || '', input)}
           </div>
         ),
         children: (
-          <div style={{ color: "gray" }}>
-            {highlightKeywords(item.abstract || "", input)}
+          <div style={{ color: 'gray' }}>
+            {highlightKeywords(item.abstract || '', input)}
           </div>
         ),
         extra: (
-          <ExportOutlined onClick={() => window.open(item.url, "_blank")} />
+          <ExportOutlined onClick={() => window.open(item.url, '_blank')} />
         ),
       };
     });
-  }, [searchResult.keyword_result]);
+  }, [searchResult.keyword_result, input]);
 
   return (
     <>
@@ -183,7 +180,7 @@ const SearchComp: React.FC<SearchCompProps> = () => {
       <Modal
         title={null}
         style={{ top: 0 }}
-        width={"70%"}
+        width={'70%'}
         open={open}
         footer={null}
         closeIcon={false}
@@ -194,7 +191,7 @@ const SearchComp: React.FC<SearchCompProps> = () => {
             placeholder="user / url / keywords"
             loading={loadingSearch}
             onSearch={onSearch}
-            style={{ width: "100%", marginBottom: "14px" }}
+            style={{ width: '100%', marginBottom: '14px' }}
           />
           <Checkbox.Group
             options={[
@@ -209,12 +206,12 @@ const SearchComp: React.FC<SearchCompProps> = () => {
         {!!searchResult.author_result?.length && (
           <>
             <Divider />
-            <div style={{ marginBottom: "14px", fontWeight: "550" }}>
+            <div style={{ marginBottom: '14px', fontWeight: '550' }}>
               {SearchSource.USER}
             </div>
             <div>
               {searchResult.author_result.map((item) => (
-                <UserDisplay user={item} keyword={input} />
+                <UserDisplay key={item.id} user={item} keyword={input} />
               ))}
             </div>
           </>
@@ -223,12 +220,12 @@ const SearchComp: React.FC<SearchCompProps> = () => {
         {!!searchResult.url_result?.length && (
           <>
             <Divider />
-            <div style={{ fontWeight: "550" }}>{SearchSource.URL}</div>
+            <div style={{ fontWeight: '550' }}>{SearchSource.URL}</div>
             <List
-              style={{ margin: "0 15px" }}
+              style={{ margin: '0 15px' }}
               itemLayout="horizontal"
               dataSource={searchResult.url_result}
-              renderItem={(item, index) => (
+              renderItem={(item) => (
                 <List.Item>
                   <List.Item.Meta
                     title={
@@ -236,7 +233,7 @@ const SearchComp: React.FC<SearchCompProps> = () => {
                         {item.title}
                       </a>
                     }
-                    description={highlightKeywords(item.url || "", input)}
+                    description={highlightKeywords(item.url || '', input)}
                   />
                 </List.Item>
               )}
@@ -247,14 +244,14 @@ const SearchComp: React.FC<SearchCompProps> = () => {
         {!!searchResult.keyword_result?.length && (
           <>
             <Divider />
-            <div style={{ marginBottom: "10px", fontWeight: "550" }}>
+            <div style={{ marginBottom: '10px', fontWeight: '550' }}>
               {SearchSource.KEYWORD}
             </div>
             <div
               id="scrollableDiv"
               style={{
                 height: 500,
-                overflow: "auto",
+                overflow: 'auto',
               }}
             >
               <InfiniteScroll

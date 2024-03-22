@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import type { LTWHP } from "../types";
+import type { LTWHP } from '../types';
 
 interface State {
   height: number;
@@ -80,7 +80,7 @@ class TipContainer extends Component<Props, State> {
           );
         },
         popup: {
-          position: shouldMove ? "below" : "above",
+          position: shouldMove ? 'below' : 'above',
         },
       })
     );
@@ -89,7 +89,7 @@ class TipContainer extends Component<Props, State> {
       <div
         className="PdfHighlighter__tip-container"
         style={{
-          visibility: isStyleCalculationInProgress ? "hidden" : "visible",
+          visibility: isStyleCalculationInProgress ? 'hidden' : 'visible',
           top,
           left,
         }}

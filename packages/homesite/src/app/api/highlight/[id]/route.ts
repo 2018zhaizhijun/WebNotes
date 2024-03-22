@@ -1,16 +1,16 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest } from "next/server";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest } from 'next/server';
+import { authOptions } from '@/api/auth/[...nextauth]/route';
 // import prisma from "@/lib/prisma";
-import db from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
+import db from '@/lib/prisma';
+import { HTTP_CODE, responseFail, toObject } from 'common/utils/httpcode';
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const id = params.id;
-  console.log("Delete highlights " + id);
+  console.log('Delete highlights ' + id);
 
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -28,9 +28,9 @@ export async function DELETE(
   // });
 
   const result = await db
-    .deleteFrom("Highlight")
-    .where("id", "=", Number(id))
-    .where("authorId", "=", userId)
+    .deleteFrom('Highlight')
+    .where('id', '=', Number(id))
+    .where('authorId', '=', userId)
     .executeTakeFirst();
 
   return Response.json(toObject(result));
@@ -42,7 +42,7 @@ export async function PUT(
 ) {
   const request = await req.json();
   const id = params.id;
-  console.log("Update highlight " + id);
+  console.log('Update highlight ' + id);
   console.log(request);
 
   const session = await getServerSession(authOptions);
@@ -54,12 +54,12 @@ export async function PUT(
   }
 
   const result = await db
-    .updateTable("Highlight")
+    .updateTable('Highlight')
     .set({
       ...request,
     })
-    .where("id", "=", Number(id))
-    .where("authorId", "=", userId)
+    .where('id', '=', Number(id))
+    .where('authorId', '=', userId)
     .executeTakeFirst();
 
   // const result = await prisma.highlight.update({

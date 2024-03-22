@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import MouseMonitor from "./MouseMonitor";
+import MouseMonitor from './MouseMonitor';
 
 interface Props {
   onMouseOver: (content: JSX.Element) => void;

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useState } from "react";
-import WebsiteHome from "@/components/WebsiteHome";
-import { SessionProvider } from "next-auth/react";
-import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import { Website } from "common/db/types";
+import React, { useCallback, useEffect, useState } from 'react';
+import WebsiteHome from '@/components/WebsiteHome';
+import { SessionProvider } from 'next-auth/react';
+import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { Website } from 'common/db/types';
 
 function WebsiteHomePage({ params }: { params: { id: number } }) {
   const [websiteInfo, setWebsiteInfo] = useState<Website | null>(null);
@@ -13,14 +13,14 @@ function WebsiteHomePage({ params }: { params: { id: number } }) {
     return sendRequest<Website[]>(
       `${API_HOST}/api/website?${queryParse({ id: String(params.id) })}`,
       {
-        method: "GET",
+        method: 'GET',
       }
     ).then((json) => {
       if (json.length > 0) {
         setWebsiteInfo(json[0]);
       }
     });
-  }, [params.id, sendRequest, setWebsiteInfo]);
+  }, [params.id, setWebsiteInfo]);
 
   useEffect(() => {
     if (params.id) {

@@ -1,8 +1,8 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import "../style/Highlight.css";
+import '../style/Highlight.css';
 
-import type { LTWHP } from "../types.js";
+import type { LTWHP } from '../types.js';
 
 interface Props {
   position: {
@@ -24,16 +24,15 @@ export class Highlight extends Component<Props> {
       onClick,
       onMouseOver,
       onMouseOut,
-      deleteHighlight,
-      backgroundColor = "#ffe28f",
+      backgroundColor = '#ffe28f',
       isScrolledTo,
     } = this.props;
 
-    const { rects, boundingRect } = position;
+    const { rects } = position;
 
     return (
       <div
-        className={`Highlight ${isScrolledTo ? "Highlight--scrolledTo" : ""}`}
+        className={`Highlight ${isScrolledTo ? 'Highlight--scrolledTo' : ''}`}
       >
         <div className="Highlight__parts">
           {rects.map((rect, index) => (

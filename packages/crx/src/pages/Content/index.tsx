@@ -6,7 +6,7 @@ import React from 'react';
 // app.id = 'custom-app';
 // document.body.appendChild(app);
 
-let href = document.location.origin + document.location.pathname;
+const href = document.location.origin + document.location.pathname;
 document.documentElement.style.width = '100%';
 document.documentElement.style.height = '100%';
 

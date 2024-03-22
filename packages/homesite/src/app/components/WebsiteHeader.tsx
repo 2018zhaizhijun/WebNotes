@@ -1,13 +1,13 @@
-import { Form, Popconfirm } from "antd";
-import FavouriteIcon from "common/components/FavouriteIcon";
-import { FavouriteWebsite, Website } from "common/db/types";
-import { API_HOST, queryParse, sendRequest } from "common/utils/http";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import SearchComp from "./SearchComp";
+import { Form, Popconfirm } from 'antd';
+import FavouriteIcon from 'common/components/FavouriteIcon';
+import { FavouriteWebsite, Website } from 'common/db/types';
+import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import SearchComp from './SearchComp';
 import FavouriteForm, {
   FavouriteFormValues,
-} from "common/components/FavouriteForm";
-import UserAct from "./UserAct";
+} from 'common/components/FavouriteForm';
+import UserAct from './UserAct';
 
 interface WebsiteHeaderProps {
   websiteInfo: Website;
@@ -24,53 +24,53 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
     sendRequest<FavouriteWebsite[]>(
       `${API_HOST}/api/favourite/website?${queryParse({ url })}`,
       {
-        method: "GET",
+        method: 'GET',
       }
     ).then((json) => {
       if (json.length > 0) {
         setFavouriteInfo(json[0]);
       }
     });
-  }, [sendRequest, url]);
+  }, [url]);
 
   const postFavouriteInfo = useCallback(
     (websiteRename: string, tag: string) => {
       sendRequest(`${API_HOST}/api/favourite/website`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({
           websiteUrl: url,
           websiteRename,
           tag,
         }),
-      }).then((json) => {
+      }).then(() => {
         getFavouriteInfo();
       });
     },
-    [sendRequest, url, getFavouriteInfo]
+    [url, getFavouriteInfo]
   );
 
   const updateFavouriteInfo = useCallback(
     (websiteRename: string, tag: string) => {
       sendRequest(`${API_HOST}/api/favourite/website?${queryParse({ url })}`, {
-        method: "PUT",
+        method: 'PUT',
         body: JSON.stringify({
           websiteRename,
           tag,
         }),
-      }).then((json) => {
+      }).then(() => {
         getFavouriteInfo();
       });
     },
-    [sendRequest, url, getFavouriteInfo]
+    [url, getFavouriteInfo]
   );
 
   const deleteFavouriteInfo = useCallback(() => {
     sendRequest(`${API_HOST}/api/favourite/website?${queryParse({ url })}`, {
-      method: "DELETE",
-    }).then((json) => {
+      method: 'DELETE',
+    }).then(() => {
       setFavouriteInfo(null);
     });
-  }, [sendRequest, url, setFavouriteInfo]);
+  }, [url, setFavouriteInfo]);
 
   useEffect(() => {
     if (url) {
@@ -87,15 +87,15 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
           : postFavouriteInfo(values.websiteRename, values.tag);
       })
       .catch((info) => {
-        console.log("Validate Failed:", info);
+        console.log('Validate Failed:', info);
       });
-  }, [form, updateFavouriteInfo, favouriteInfo]);
+  }, [form, updateFavouriteInfo, postFavouriteInfo, favouriteInfo]);
 
   const initialValues = useMemo(() => {
     if (websiteInfo) {
       return {
         websiteRename: websiteInfo.title || websiteInfo.url,
-        tag: "default",
+        tag: 'default',
       };
     }
     return {};
@@ -103,9 +103,9 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
 
   return (
     <div className="header">
-      <div style={{ marginLeft: "20px" }}>
-        <span>{"Website / "}</span>
-        <span style={{ fontWeight: "550" }}>{title || url}</span>
+      <div style={{ marginLeft: '20px' }}>
+        <span>{'Website / '}</span>
+        <span style={{ fontWeight: '550' }}>{title || url}</span>
         {url ? (
           <Popconfirm
             icon={null}
@@ -116,8 +116,9 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
                 initialValues={{
                   websiteRename:
                     favouriteInfo?.websiteRename ||
-                    initialValues.websiteRename!,
-                  tag: favouriteInfo?.tag || initialValues.tag!,
+                    initialValues.websiteRename ||
+                    '',
+                  tag: favouriteInfo?.tag || initialValues.tag || '',
                 }}
               />
             }
@@ -133,15 +134,15 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
           >
             <FavouriteIcon
               style={{
-                marginLeft: "20px",
-                cursor: "pointer",
-                color: favouriteInfo ? undefined : "transparent",
+                marginLeft: '20px',
+                cursor: 'pointer',
+                color: favouriteInfo ? undefined : 'transparent',
               }}
             />
           </Popconfirm>
         ) : null}
       </div>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: 'flex' }}>
         <SearchComp />
         <UserAct />
       </div>

@@ -1,9 +1,10 @@
-import React, { useCallback, useState } from "react";
-import { Form, Input, Modal, Upload } from "antd";
-import { API_HOST, getBase64, queryParse, sendRequest } from "../utils/http";
-import { UploadFile } from "antd/es/upload";
-import { Session } from "next-auth";
-import { SimplifiedUser } from "db/prisma";
+import React, { useCallback, useState } from 'react';
+import { Form, Image, Input, Modal, Upload } from 'antd';
+import { API_HOST, getBase64, queryParse, sendRequest } from '../utils/http';
+import { UploadFile } from 'antd/es/upload';
+import { Session } from 'next-auth';
+import { SimplifiedUser } from 'db/prisma';
+import { RuleObject } from 'antd/es/form';
 
 interface UserModalProps {
   open: boolean;
@@ -27,17 +28,17 @@ const UserModal: React.FC<UserModalProps> = ({
   const [form] = Form.useForm<UserFormValues>();
   const [fileList, setFileList] = useState<UploadFile[]>([
     {
-      uid: "",
-      name: "",
-      url: session!.user?.image || "",
-      status: "done",
+      uid: '',
+      name: '',
+      url: session.user?.image || '',
+      status: 'done',
     },
   ]);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   const userNameValidator = useCallback(
-    (rule: any, value: string, callback: any) => {
+    (rule: RuleObject, value: string, callback: (error?: string) => void) => {
       if (!value || value === session.user?.name) {
         callback();
       }
@@ -47,34 +48,34 @@ const UserModal: React.FC<UserModalProps> = ({
       sendRequest<SimplifiedUser[]>(
         `${API_HOST}/api/user?${queryParse({ name: value })}`,
         {
-          method: "GET",
+          method: 'GET',
         }
       ).then((json) => {
         if (json.length > 0) {
-          callback("User name already exists");
+          callback('User name already exists');
         }
         callback();
       });
     },
-    [sendRequest, session]
+    [session]
   );
 
   const updateUserInfo = useCallback(
     async (image: string, name: string, onOk: () => void) => {
       return sendRequest(`${API_HOST}/api/user`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-type": "application/json; charset=UTF-8",
+          'Content-type': 'application/json; charset=UTF-8',
         },
         body: JSON.stringify({
           image,
           name,
         }),
-      }).then((json) => {
+      }).then(() => {
         onOk?.();
       });
     },
-    [sendRequest]
+    []
   );
 
   const confirmHandler = useCallback(() => {
@@ -83,24 +84,16 @@ const UserModal: React.FC<UserModalProps> = ({
     form
       .validateFields()
       .then(async (values) => {
-        await updateUserInfo(fileList[0].url || "", values.name, onOk);
+        await updateUserInfo(fileList[0].url || '', values.name, onOk);
         // await onOk?.();
         setOpen(false);
         setConfirmLoading(false);
       })
       .catch((info) => {
-        console.log("Validate Failed:", info);
+        console.log('Validate Failed:', info);
         setConfirmLoading(false);
       });
-  }, [
-    setConfirmLoading,
-    form,
-    updateUserInfo,
-    fileList,
-    onOk,
-    setOpen,
-    setConfirmLoading,
-  ]);
+  }, [form, updateUserInfo, fileList, onOk, setOpen, setConfirmLoading]);
 
   //   const handleChange: UploadProps["onChange"] = (info) => {
   //     if (info.file.status === "uploading") {
@@ -173,9 +166,9 @@ const UserModal: React.FC<UserModalProps> = ({
           labelCol={{ span: 4 }}
           wrapperCol={{ span: 14 }}
           layout="horizontal"
-          style={{ maxWidth: 600, paddingTop: "20px" }}
+          style={{ maxWidth: 600, paddingTop: '20px' }}
           initialValues={{
-            name: session!.user?.name || "Anonymous User",
+            name: session.user?.name || 'Anonymous User',
           }}
         >
           <Form.Item
@@ -191,21 +184,21 @@ const UserModal: React.FC<UserModalProps> = ({
               maxCount={1}
               showUploadList={false}
               accept=".png,.jpg,.jpeg"
-              customRequest={async (option: any) => {
-                option.file.status = "done";
-                const base64 = await getBase64(option.file);
+              customRequest={async (options: any) => {
+                options.file.status = 'done';
+                const base64 = await getBase64(options.file);
                 // option.onSuccess(base64);
-                option.file.url = base64;
-                setFileList([option.file]);
+                options.file.url = base64;
+                setFileList([options.file]);
               }}
               //   beforeUpload={beforeUpload}
               //   onChange={handleChange}
               fileList={fileList}
             >
-              <img
+              <Image
                 src={fileList[0].url}
                 alt="avatar"
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
               />
             </Upload>
           </Form.Item>

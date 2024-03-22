@@ -1,11 +1,11 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Rnd } from "react-rnd";
-import { getPageFromElement } from "../lib/pdfjs-dom";
+import { Rnd } from 'react-rnd';
+import { getPageFromElement } from '../lib/pdfjs-dom';
 
-import "../style/AreaHighlight.css";
+import '../style/AreaHighlight.css';
 
-import type { LTWHP, ViewportHighlight } from "../types";
+import type { LTWHP, ViewportHighlight } from '../types';
 
 interface Props {
   highlight: ViewportHighlight;
@@ -20,7 +20,7 @@ export class AreaHighlight extends Component<Props> {
     return (
       <div
         className={`AreaHighlight ${
-          isScrolledTo ? "AreaHighlight--scrolledTo" : ""
+          isScrolledTo ? 'AreaHighlight--scrolledTo' : ''
         }`}
       >
         <Rnd

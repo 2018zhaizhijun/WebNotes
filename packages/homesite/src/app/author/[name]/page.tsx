@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useState } from "react";
-import AuthorHome from "@/components/AuthorHome";
-import { SessionProvider } from "next-auth/react";
-import { SimplifiedUser } from "common/db/prisma";
-import { API_HOST, queryParse, sendRequest } from "common/utils/http";
+import React, { useCallback, useEffect, useState } from 'react';
+import AuthorHome from '@/components/AuthorHome';
+import { SessionProvider } from 'next-auth/react';
+import { SimplifiedUser } from 'common/db/prisma';
+import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 
 function AuthorHomePage({ params }: { params: { name: string } }) {
   const [authorInfo, setAuthorInfo] = useState<SimplifiedUser | null>(null);
@@ -13,14 +13,14 @@ function AuthorHomePage({ params }: { params: { name: string } }) {
     return sendRequest<SimplifiedUser[]>(
       `${API_HOST}/api/user?${queryParse({ name: params.name })}`,
       {
-        method: "GET",
+        method: 'GET',
       }
     ).then((json) => {
       if (json.length > 0) {
         setAuthorInfo(json[0]);
       }
     });
-  }, [params.name, sendRequest, setAuthorInfo]);
+  }, [params.name, setAuthorInfo]);
 
   useEffect(() => {
     getAuthorInfo();

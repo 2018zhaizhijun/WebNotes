@@ -4,7 +4,7 @@
 // for clarity reasons I decided not to store actual (0, 1) coordinates, but
 // provide width and height, so user can compute ratio himself if needed
 
-import type { LTWHP, Scaled, Viewport } from "../types";
+import type { LTWHP, Scaled, Viewport } from '../types';
 
 interface WIDTH_HEIGHT {
   width: number;
@@ -51,7 +51,7 @@ const pdfToViewport = (pdf: Scaled, viewport: Viewport): LTWHP => {
 export const scaledToViewport = (
   scaled: Scaled,
   viewport: Viewport,
-  usePdfCoordinates: boolean = false
+  usePdfCoordinates = false
 ): LTWHP => {
   const { width, height } = viewport;
 
@@ -60,7 +60,7 @@ export const scaledToViewport = (
   }
 
   if (scaled.x1 === undefined) {
-    throw new Error("You are using old position format, please update");
+    throw new Error('You are using old position format, please update');
   }
 
   const x1 = (width * scaled.x1) / scaled.width;

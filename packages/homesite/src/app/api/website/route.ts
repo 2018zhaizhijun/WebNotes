@@ -1,14 +1,15 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest } from "next/server";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+// import { getServerSession } from 'next-auth/next';
+import { NextRequest } from 'next/server';
+// import { authOptions } from '@/api/auth/[...nextauth]/route';
 // import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from "common/utils/httpcode";
-import db from "@/lib/prisma";
+// import { HTTP_CODE, responseFail, toObject } from 'common/utils/httpcode';
+import { toObject } from 'common/utils/httpcode';
+import db from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get("url");
-  const id = req.nextUrl.searchParams.get("id");
-  console.log("Get website info of " + id + " " + url);
+  const url = req.nextUrl.searchParams.get('url');
+  const id = req.nextUrl.searchParams.get('id');
+  console.log('Get website info of ' + id + ' ' + url);
 
   //   const session = await getServerSession(authOptions);
   //   const userId = session?.user?.id;
@@ -18,12 +19,12 @@ export async function GET(req: NextRequest) {
   //   return responseFail(HTTP_CODE.NOT_LOGGED);
   // }
 
-  let query = db.selectFrom("Website");
+  let query = db.selectFrom('Website');
 
   if (url) {
-    query = query.where("url", "=", url);
+    query = query.where('url', '=', url);
   } else {
-    query = query.where("id", "=", Number(id));
+    query = query.where('id', '=', Number(id));
   }
 
   const result = await query.selectAll().execute();
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
   //   }
 
   const result = await db
-    .insertInto("Website")
+    .insertInto('Website')
     .values({
       ...request,
     })

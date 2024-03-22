@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 interface Props {
   onMoveAway: () => void;
@@ -41,9 +41,9 @@ class MouseMonitor extends Component<Props> {
 
     if (ref) {
       const { ownerDocument: doc } = ref;
-      doc.addEventListener("mousemove", this.onMouseMove);
+      doc.addEventListener('mousemove', this.onMouseMove);
       this.unsubscribe = () => {
-        doc.removeEventListener("mousemove", this.onMouseMove);
+        doc.removeEventListener('mousemove', this.onMouseMove);
       };
     }
   };

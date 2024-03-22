@@ -3,24 +3,24 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
-  PdfLoader,
-  PdfHighlighter,
-  Highlight,
-  Popup,
   AreaHighlight,
+  Highlight,
+  PdfHighlighter,
+  PdfLoader,
+  Popup,
 } from './react-pdf-highlighter';
 
-import Spinner from './Spinner';
 import Sidebar from './Sidebar';
-import Tip from './Tip';
+import Spinner from './react-pdf-highlighter/components/Spinner';
+import Tip from './react-pdf-highlighter/components/Tip';
 
-import './style/PDF.css';
 import { DeleteOutlined } from '@ant-design/icons';
 import { Space } from 'antd';
+import './PDF.css';
 
-import { API_HOST, queryParse, sendRequest } from '../utils/http';
-import { HighlightType } from '../db/prisma';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
+import { HighlightType } from '../db/prisma';
+import { API_HOST, queryParse, sendRequest } from '../utils/http';
 
 const parseIdFromHash = () =>
   document.location.hash.slice('#highlight-'.length);

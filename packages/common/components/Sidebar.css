@@ -1,0 +1,23 @@
+.sidebar {
+  width: 25%;
+}
+
+.sidebar__description {
+  padding: 1rem;
+}
+
+.sidebar__description__title {
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.sidebar__favourite__icon {
+  cursor: pointer;
+  margin-left: 20px;
+  padding: 6px;
+}
+
+.highlight__text,
+.highlight__image {
+  margin-top: 0.5rem;
+}

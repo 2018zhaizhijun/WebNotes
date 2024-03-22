@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import AuthorHome from '@/components/AuthorHome';
-import { SessionProvider } from 'next-auth/react';
+import AuthorHome from '@/components/Home/AuthorHome';
 import { SimplifiedUser } from 'common/db/prisma';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { SessionProvider } from 'next-auth/react';
+import { useCallback, useEffect, useState } from 'react';
 
 function AuthorHomePage({ params }: { params: { name: string } }) {
   const [authorInfo, setAuthorInfo] = useState<SimplifiedUser | null>(null);

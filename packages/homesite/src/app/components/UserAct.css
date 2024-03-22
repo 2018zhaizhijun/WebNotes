@@ -1,0 +1,13 @@
+.user-drawer__item {
+  cursor: pointer;
+  color: rgb(49, 49, 49);
+  padding: 10px 0;
+
+  .anticon {
+    padding: 0 10px;
+  }
+
+  :hover {
+    color: #418df7;
+  }
+}

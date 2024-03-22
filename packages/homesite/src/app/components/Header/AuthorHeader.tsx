@@ -4,8 +4,9 @@ import { FavouriteUser } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import SearchComp from './SearchComp';
-import UserAct from './UserAct';
+import SearchComp from '../SearchComp';
+import UserAct from '../UserAct';
+import './Header.css';
 
 interface AuthorHeaderProps {
   authorInfo: SimplifiedUser;
@@ -64,14 +65,13 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
 
   return (
     <div className="header">
-      <div style={{ marginLeft: '20px' }}>
+      <div className="header__title">
         <span>{'Author / '}</span>
-        <span style={{ fontWeight: '550' }}>{authorInfo.name}</span>
+        <span className="header__title__name">{authorInfo.name}</span>
         {session && authorInfo.name !== session.user.name ? (
           <FavouriteIcon
+            className="header__title__favourite-icon"
             style={{
-              marginLeft: '20px',
-              cursor: 'pointer',
               color: favouriteInfo ? undefined : 'transparent',
             }}
             onClick={() => {
@@ -80,7 +80,7 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
           />
         ) : null}
       </div>
-      <div style={{ display: 'flex' }}>
+      <div className="header__content">
         <SearchComp />
         <UserAct />
       </div>

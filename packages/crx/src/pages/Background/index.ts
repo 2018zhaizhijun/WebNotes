@@ -1,5 +1,5 @@
 import { HighlightType } from 'common/db/prisma';
-import { Website, FavouriteWebsite } from 'common/db/types';
+import { FavouriteWebsite, Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 import { DeleteResult, InsertResult, UpdateResult } from 'kysely';
 import { Session } from 'next-auth';
@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
   } else if (request.action === 'LOG_OUT') {
     console.log('running auth check');
 
-    var cookiesToDelete = [
+    const cookiesToDelete = [
       { url: API_HOST, name: '__Host-next-auth.csrf-token' },
       { url: API_HOST, name: '__Secure-next-auth.session-token' },
       { url: API_HOST, name: '__Secure-next-auth.callback-url' },

@@ -2,28 +2,3 @@ html,
 body {
   height: 100%;
 }
-
-.mainContent {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  align-items: stretch;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgb(245, 246, 249);
-  border-bottom: 1px solid rgba(94, 95, 95, 0.2);
-  color: rgb(40, 40, 40);
-  height: 60px;
-}
-
-.ant-menu-submenu {
-  width: 256px;
-}
-
-.anticon:hover {
-  color: #418df7;
-}

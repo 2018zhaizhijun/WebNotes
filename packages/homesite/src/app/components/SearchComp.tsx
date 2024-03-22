@@ -1,3 +1,5 @@
+import { highlightKeywords } from '@/lib/utils';
+import { ExportOutlined } from '@ant-design/icons';
 import {
   Checkbox,
   Collapse,
@@ -7,7 +9,6 @@ import {
   Modal,
   Skeleton,
 } from 'antd';
-import InfiniteScroll from 'react-infinite-scroll-component';
 import { CheckboxGroupProps } from 'antd/es/checkbox';
 import { CheckboxValueType } from 'antd/es/checkbox/Group';
 import { SearchProps } from 'antd/es/input/Search';
@@ -15,9 +16,9 @@ import { SimplifiedUser } from 'common/db/prisma';
 import { Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 import React, { useCallback, useMemo, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import './SearchComp.css';
 import UserDisplay from './UserDisplay';
-import { ExportOutlined } from '@ant-design/icons';
-import { highlightKeywords } from '@/lib/utils';
 
 const { Search } = Input;
 
@@ -153,12 +154,12 @@ const SearchComp: React.FC = () => {
       return {
         key: String(item.id),
         label: (
-          <div style={{ fontWeight: '480' }}>
+          <div className="search__keyword-result__label">
             {highlightKeywords(item.title || '', input)}
           </div>
         ),
         children: (
-          <div style={{ color: 'gray' }}>
+          <div className="search__keyword-result__content">
             {highlightKeywords(item.abstract || '', input)}
           </div>
         ),
@@ -172,14 +173,14 @@ const SearchComp: React.FC = () => {
   return (
     <>
       <Search
+        className="search__input"
         placeholder="user / url / keywords"
         onClick={() => setOpen(true)}
-        style={{ width: 200 }}
       />
 
       <Modal
+        className="search__modal"
         title={null}
-        style={{ top: 0 }}
         width={'70%'}
         open={open}
         footer={null}
@@ -188,10 +189,10 @@ const SearchComp: React.FC = () => {
       >
         <div>
           <Search
+            className="search__modal__input"
             placeholder="user / url / keywords"
             loading={loadingSearch}
             onSearch={onSearch}
-            style={{ width: '100%', marginBottom: '14px' }}
           />
           <Checkbox.Group
             options={[
@@ -206,9 +207,7 @@ const SearchComp: React.FC = () => {
         {!!searchResult.author_result?.length && (
           <>
             <Divider />
-            <div style={{ marginBottom: '14px', fontWeight: '550' }}>
-              {SearchSource.USER}
-            </div>
+            <div className="search__user-result">{SearchSource.USER}</div>
             <div>
               {searchResult.author_result.map((item) => (
                 <UserDisplay key={item.id} user={item} keyword={input} />
@@ -220,9 +219,9 @@ const SearchComp: React.FC = () => {
         {!!searchResult.url_result?.length && (
           <>
             <Divider />
-            <div style={{ fontWeight: '550' }}>{SearchSource.URL}</div>
+            <div className="search__url-result">{SearchSource.URL}</div>
             <List
-              style={{ margin: '0 15px' }}
+              className="search__url-result__list"
               itemLayout="horizontal"
               dataSource={searchResult.url_result}
               renderItem={(item) => (
@@ -244,16 +243,8 @@ const SearchComp: React.FC = () => {
         {!!searchResult.keyword_result?.length && (
           <>
             <Divider />
-            <div style={{ marginBottom: '10px', fontWeight: '550' }}>
-              {SearchSource.KEYWORD}
-            </div>
-            <div
-              id="scrollableDiv"
-              style={{
-                height: 500,
-                overflow: 'auto',
-              }}
-            >
+            <div className="search__keyword-result">{SearchSource.KEYWORD}</div>
+            <div id="scrollableDiv">
               <InfiniteScroll
                 dataLength={items.length}
                 next={loadMoreData}

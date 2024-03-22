@@ -1,13 +1,13 @@
 import { Form, Popconfirm } from 'antd';
+import FavouriteForm, {
+  FavouriteFormValues,
+} from 'common/components/FavouriteForm';
 import FavouriteIcon from 'common/components/FavouriteIcon';
 import { FavouriteWebsite, Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import SearchComp from './SearchComp';
-import FavouriteForm, {
-  FavouriteFormValues,
-} from 'common/components/FavouriteForm';
-import UserAct from './UserAct';
+import SearchComp from '../SearchComp';
+import UserAct from '../UserAct';
 
 interface WebsiteHeaderProps {
   websiteInfo: Website;
@@ -103,9 +103,9 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
 
   return (
     <div className="header">
-      <div style={{ marginLeft: '20px' }}>
+      <div className="header__title">
         <span>{'Website / '}</span>
-        <span style={{ fontWeight: '550' }}>{title || url}</span>
+        <span className="header__title__name">{title || url}</span>
         {url ? (
           <Popconfirm
             icon={null}
@@ -133,16 +133,15 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
             cancelText="Delete"
           >
             <FavouriteIcon
+              className="header__title__favourite-icon"
               style={{
-                marginLeft: '20px',
-                cursor: 'pointer',
                 color: favouriteInfo ? undefined : 'transparent',
               }}
             />
           </Popconfirm>
         ) : null}
       </div>
-      <div style={{ display: 'flex' }}>
+      <div className="header__content">
         <SearchComp />
         <UserAct />
       </div>

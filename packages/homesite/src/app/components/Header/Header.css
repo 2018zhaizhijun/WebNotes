@@ -1,0 +1,26 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgb(245, 246, 249);
+  border-bottom: 1px solid rgba(94, 95, 95, 0.2);
+  color: rgb(40, 40, 40);
+  height: 60px;
+}
+
+.header__title {
+  margin-left: 20px;
+}
+
+.header__title__name {
+  font-weight: 550;
+}
+
+.header__title__favourite-icon {
+  margin-left: 20px;
+  cursor: pointer;
+}
+
+.header__content {
+  display: flex;
+}

@@ -1,0 +1,43 @@
+.search__keyword-result__label {
+  font-weight: 480;
+}
+
+.search__keyword-result__content {
+  color: gray;
+}
+
+.search__input {
+  width: 200px;
+}
+
+.search__modal {
+  top: 0;
+}
+
+.search__modal__input {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.search__user-result,
+.search__url-result,
+.search__keyword-result {
+  font-weight: 550;
+}
+
+.search__user-result {
+  margin-bottom: 14px;
+}
+
+.search__keyword-result {
+  margin-bottom: 10px;
+}
+
+.search__url-result__list {
+  margin: 0 15px;
+}
+
+#scrollableDiv {
+  height: 500;
+  overflow: auto;
+}

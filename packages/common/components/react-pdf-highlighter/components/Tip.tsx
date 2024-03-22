@@ -1,98 +1,128 @@
-import React, { Component } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
+import {
+  CheckOutlined,
+  HighlightOutlined,
+  MessageOutlined,
+} from '@ant-design/icons';
+import TextArea from 'antd/es/input/TextArea';
 import '../style/Tip.css';
 
-interface State {
-  compact: boolean;
-  text: string;
-  emoji: string;
-}
+import { green, presetPalettes, red, yellow } from '@ant-design/colors';
+import type { ColorPickerProps } from 'antd';
+import { ColorPicker } from 'antd';
+import styled from 'styled-components';
+
+type Presets = Required<ColorPickerProps>['presets'][number];
+
+const genPresets = (presets = presetPalettes) =>
+  Object.entries(presets).map<Presets>(([label, colors]) => ({
+    label,
+    colors,
+  }));
 
 interface Props {
-  onConfirm: (comment: { text: string; emoji: string }) => void;
-  onOpen: () => void;
-  onUpdate?: () => void;
+  onConfirm: (color: string, comment?: { text: string }) => void;
 }
 
-export class Tip extends Component<Props, State> {
-  state: State = {
-    compact: true,
-    text: '',
-    emoji: '',
-  };
+const StyledDiv = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 5px 0 0;
 
-  // for TipContainer
-  componentDidUpdate(nextProps: Props, nextState: State) {
-    const { onUpdate } = this.props;
-
-    if (onUpdate && this.state.compact !== nextState.compact) {
-      onUpdate();
-    }
+  button:hover {
+    color: rgb(21, 92, 254);
   }
+`;
 
-  render() {
-    const { onConfirm, onOpen } = this.props;
-    const { compact, text, emoji } = this.state;
+export function Tip({ onConfirm }: Props) {
+  const [compact, setCompact] = useState<boolean>(true);
+  const [text, setText] = useState<string>('');
+  const [color, setColor] = useState<string>('#ffe28f');
 
-    return (
-      <div className="Tip">
-        {compact ? (
-          <div
-            className="Tip__compact"
-            onClick={() => {
-              onOpen();
-              this.setState({ compact: false });
-            }}
-          >
-            Add highlight
-          </div>
-        ) : (
-          <form
-            className="Tip__card"
-            onSubmit={(event) => {
-              event.preventDefault();
-              onConfirm({ text, emoji });
-            }}
-          >
-            <div>
-              <textarea
-                placeholder="Your comment"
-                autoFocus
-                value={text}
-                onChange={(event) =>
-                  this.setState({ text: event.target.value })
-                }
-                ref={(node) => {
-                  if (node) {
-                    node.focus();
-                  }
-                }}
-              />
-              <div>
-                {['💩', '😱', '😍', '🔥', '😳', '⚠️'].map((_emoji) => (
-                  <label key={_emoji}>
-                    <input
-                      checked={emoji === _emoji}
-                      type="radio"
-                      name="emoji"
-                      value={_emoji}
-                      onChange={(event) =>
-                        this.setState({ emoji: event.target.value })
-                      }
-                    />
-                    {_emoji}
-                  </label>
-                ))}
+  const presets = useMemo(() => {
+    return genPresets({ yellow, red, green });
+  }, []);
+
+  const getPopupContainer = useCallback((triggerNode: HTMLElement) => {
+    return triggerNode.parentNode as HTMLElement;
+  }, []);
+
+  return (
+    <div className="Tip">
+      {compact ? (
+        <div className="Tip__compact">
+          <div className="Tip__option">
+            <ColorPicker
+              presets={presets}
+              value={color}
+              size="small"
+              onChangeComplete={(color) => {
+                onConfirm('#' + color.toHex());
+              }}
+              getPopupContainer={getPopupContainer}
+              format="rgb"
+            >
+              {/* <div className="Tip__item">Add highlight</div> */}
+              <div className="Tip__item">
+                <HighlightOutlined />
               </div>
+            </ColorPicker>
+          </div>
+          <div className="Tip__option">
+            {/* <div className="Tip__item"
+                    onClick={() => {
+                        setCompact(false)
+                    }}
+                >
+                    Add comment
+                </div> */}
+            <div
+              className="Tip__item"
+              onClick={() => {
+                setCompact(false);
+              }}
+            >
+              <MessageOutlined />
             </div>
-            <div>
-              <input type="submit" value="Save" />
-            </div>
-          </form>
-        )}
-      </div>
-    );
-  }
+          </div>
+        </div>
+      ) : (
+        <form
+          className="Tip__card"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onConfirm(color, { text });
+          }}
+        >
+          <div>
+            <TextArea
+              rows={3}
+              placeholder="Your comment"
+              autoFocus
+              maxLength={100}
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+            />
+          </div>
+          <StyledDiv>
+            <ColorPicker
+              value={color}
+              presets={presets}
+              size="small"
+              onChangeComplete={(color) => setColor('#' + color.toHex())}
+              getPopupContainer={getPopupContainer}
+              format="rgb"
+            />
+            <button type="submit">
+              <CheckOutlined />
+            </button>
+          </StyledDiv>
+        </form>
+      )}
+    </div>
+  );
 }
 
 export default Tip;

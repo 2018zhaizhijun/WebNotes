@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Menu } from 'antd';
+import { ItemType } from 'antd/es/menu/hooks/useItems';
 import PDF from 'common/components/PDF';
+import { HighlightType, SimplifiedUser } from 'common/db/prisma';
 import { Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
-import { HighlightType, SimplifiedUser } from 'common/db/prisma';
-import WebsiteHeader from './WebsiteHeader';
 import { useSession } from 'next-auth/react';
-import SidebarButtons from './SidebarButtons';
-import { ItemType } from 'antd/es/menu/hooks/useItems';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import WebsiteHeader from '../Header/WebsiteHeader';
+import SidebarButtons from '../SidebarButtons';
+import './Home.css';
 
 interface WebsiteHomeProps {
   websiteInfo: Website;
@@ -79,7 +80,6 @@ const WebsiteHome: React.FC<WebsiteHomeProps> = ({ websiteInfo }) => {
                 setActivatedAuthor(e.key);
               }
             }}
-            style={{ width: 256 }}
             mode="inline"
             items={items}
             multiple={false}

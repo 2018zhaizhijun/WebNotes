@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { API_HOST } from '../utils/http';
 import { Affix, Form, Image, Popconfirm } from 'antd';
-import FavouriteForm, { FavouriteFormValues } from './FavouriteForm';
 import { HighlightType } from 'db/prisma';
 import { FavouriteWebsite, Website } from 'db/types';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { API_HOST } from '../utils/http';
 import { extractInfo } from '../utils/pdf';
+import FavouriteForm, { FavouriteFormValues } from './FavouriteForm';
 import FavouriteIcon from './FavouriteIcon';
+import './Sidebar.css';
 // const UserInfo = React.lazy(() => import('./UserInfo'));
 
 interface SidebarProps {
@@ -179,9 +180,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <div className="sidebar" style={{ width: '25%' }} ref={setContainer}>
-        <div className="description" style={{ padding: '1rem' }}>
-          <div style={{ marginBottom: '1rem', fontSize: '1.3rem' }}>
+      <div className="sidebar" ref={setContainer}>
+        <div className="sidebar__description">
+          <div className="sidebar__description__title">
             <span>WebNotes</span>
             {!document.location.href.startsWith(API_HOST) && websiteInfo ? (
               <Popconfirm
@@ -210,11 +211,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 cancelText="Delete"
               >
                 <FavouriteIcon
+                  className="sidebar__favourite__icon"
                   style={{
-                    cursor: 'pointer',
                     color: favouriteInfo ? undefined : 'transparent',
-                    marginLeft: '20px',
-                    padding: '6px',
                   }}
                 />
               </Popconfirm>
@@ -253,15 +252,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div>
                 <strong>{highlight.comment?.text}</strong>
                 {highlight.content.text ? (
-                  <blockquote style={{ marginTop: '0.5rem' }}>
+                  <blockquote className="highlight__text">
                     {`${highlight.content.text.slice(0, 90).trim()}…`}
                   </blockquote>
                 ) : null}
                 {highlight.content.image ? (
-                  <div
-                    className="highlight__image"
-                    style={{ marginTop: '0.5rem' }}
-                  >
+                  <div className="highlight__image">
                     <Image src={highlight.content.image} alt={'Screenshot'} />
                   </div>
                 ) : null}

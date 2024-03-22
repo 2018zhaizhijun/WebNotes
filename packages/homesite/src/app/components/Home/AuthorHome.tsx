@@ -8,8 +8,9 @@ import { Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import AuthorHeader from './AuthorHeader';
-import SidebarButtons from './SidebarButtons';
+import AuthorHeader from '../Header/AuthorHeader';
+import SidebarButtons from '../SidebarButtons';
+import './Home.css';
 
 interface AuthorHomeProps {
   authorInfo: SimplifiedUser;
@@ -104,7 +105,6 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
                 setActivatedUrl(e.key);
               }
             }}
-            style={{ width: 256 }}
             defaultOpenKeys={[
               items[0]?.children ? (items[0]?.key as string) : '',
             ]}

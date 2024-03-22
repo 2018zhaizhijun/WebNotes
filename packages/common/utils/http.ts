@@ -1,7 +1,7 @@
 import { RcFile } from 'antd/es/upload';
 import { CODE_INFO, HTTP_CODE } from './httpcode';
 
-export const API_HOST = 'https://localhost:4000';
+export const API_HOST = process.env.NEXT_PUBLIC_DEV_HOST;
 
 export function queryParse(query: { [k: string]: string | undefined }): string {
   let queryText = '';

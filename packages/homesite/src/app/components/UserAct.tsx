@@ -1,26 +1,12 @@
+import { EditOutlined, HeartOutlined, LogoutOutlined } from '@ant-design/icons';
 import { Avatar, Divider, Drawer, Modal } from 'antd';
+import UserModal from 'common/components/UserModal';
+import { SimplifiedUser } from 'common/db/prisma';
+import { API_HOST, sendRequest } from 'common/utils/http';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { EditOutlined, HeartOutlined, LogoutOutlined } from '@ant-design/icons';
-import UserModal from 'common/components/UserModal';
-import styled from 'styled-components';
-import { API_HOST, sendRequest } from 'common/utils/http';
-import { SimplifiedUser } from 'common/db/prisma';
+import './UserAct.css';
 import UserDisplay from './UserDisplay';
-
-const StyledDiv = styled.div`
-  cursor: pointer;
-  color: rgb(49, 49, 49);
-  padding: 10px 0;
-
-  .anticon {
-    padding: 0 10px;
-  }
-
-  :hover {
-    color: #418df7;
-  }
-`;
 
 const UserAct: React.FC = () => {
   const { data: session, update } = useSession();
@@ -70,22 +56,28 @@ const UserAct: React.FC = () => {
             width={240}
             closeIcon={false}
           >
-            <StyledDiv onClick={() => setEditModalOpen(true)}>
+            <div
+              className="user-drawer__item"
+              onClick={() => setEditModalOpen(true)}
+            >
               <div>
                 <EditOutlined /> Edit Profile
               </div>
-            </StyledDiv>
-            <StyledDiv onClick={() => setFavouriteModalOpen(true)}>
+            </div>
+            <div
+              className="user-drawer__item"
+              onClick={() => setFavouriteModalOpen(true)}
+            >
               <div>
                 <HeartOutlined /> Favourite Authors
               </div>
-            </StyledDiv>
+            </div>
             <Divider />
-            <StyledDiv onClick={() => signOut()}>
+            <div className="user-drawer__item" onClick={() => signOut()}>
               <div>
                 <LogoutOutlined /> Log Out
               </div>
-            </StyledDiv>
+            </div>
 
             <UserModal
               open={editModalOpen}

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import WebsiteHome from '@/components/WebsiteHome';
-import { SessionProvider } from 'next-auth/react';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import WebsiteHome from '@/components/Home/WebsiteHome';
 import { Website } from 'common/db/types';
+import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { SessionProvider } from 'next-auth/react';
+import { useCallback, useEffect, useState } from 'react';
 
 function WebsiteHomePage({ params }: { params: { id: number } }) {
   const [websiteInfo, setWebsiteInfo] = useState<Website | null>(null);

@@ -3,6 +3,7 @@ import { HighlightType } from 'db/prisma';
 import { FavouriteWebsite, Website } from 'db/types';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { withErrorBoundaryCustom } from '../utils/error';
 import { API_HOST } from '../utils/http';
 import { extractInfo } from '../utils/pdf';
 import FavouriteForm, { FavouriteFormValues } from './FavouriteForm';
@@ -57,7 +58,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       chrome.runtime.sendMessage(
         { action: 'GET_FAVOURITE_WEBSITE_INFO', url },
         function (result: FavouriteWebsite[]) {
-          console.log(result);
           if (result.length > 0) {
             setFavouriteInfo(result[0]);
           }
@@ -92,7 +92,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             ...params,
           },
           function (result) {
-            console.log(result);
             getFavouriteInfo();
           }
         );
@@ -106,7 +105,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       chrome.runtime.sendMessage(
         { action: 'DELETE_FAVOURITE_WEBSITE_INFO', url },
         function (result) {
-          console.log(result);
           setFavouriteInfo(null);
         }
       );
@@ -119,7 +117,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         chrome.runtime.sendMessage(
           { action: 'GET_WEBSITE_INFO', url },
           function (result: Website[]) {
-            console.log(result);
             if (result.length > 0) {
               setWebsiteInfo(result[0]);
               getFavouriteInfo();
@@ -142,7 +139,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           body: JSON.stringify({ url, ...pdfInfo }),
         },
         function (result) {
-          console.log(result);
           getWebsiteInfo();
         }
       );
@@ -157,6 +153,16 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [getWebsiteInfo, createWebsiteInfo, url, pdfDocument]);
 
+  const initialValues = useMemo(() => {
+    if (websiteInfo) {
+      return {
+        websiteRename: websiteInfo.title || websiteInfo.url,
+        tag: 'default',
+      };
+    }
+    return {};
+  }, [websiteInfo]);
+
   const confirmHandler = useCallback(() => {
     form
       .validateFields()
@@ -168,15 +174,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       });
   }, [form, updateFavouriteInfo, favouriteInfo]);
 
-  const initialValues = useMemo(() => {
-    if (websiteInfo) {
-      return {
-        websiteRename: websiteInfo.title || websiteInfo.url,
-        tag: 'default',
-      };
+  const cancelHandler = useCallback(() => {
+    if (favouriteInfo) {
+      deleteFavouriteInfo();
+      form.setFieldsValue(initialValues);
     }
-    return {};
-  }, [websiteInfo]);
+  }, [deleteFavouriteInfo, form, favouriteInfo, initialValues]);
 
   return (
     <>
@@ -201,12 +204,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   />
                 }
                 onConfirm={confirmHandler}
-                onCancel={() => {
-                  if (favouriteInfo) {
-                    deleteFavouriteInfo();
-                    form.setFieldsValue(initialValues);
-                  }
-                }}
+                onCancel={cancelHandler}
                 okText="Confirm"
                 cancelText="Delete"
               >
@@ -277,4 +275,4 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-export default Sidebar;
+export default withErrorBoundaryCustom<SidebarProps>(Sidebar);

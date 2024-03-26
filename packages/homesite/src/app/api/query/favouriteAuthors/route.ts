@@ -1,17 +1,10 @@
-import { getServerSession } from 'next-auth/next';
-// import { NextRequest } from 'next/server';
-import { authOptions } from '@/api/auth/[...nextauth]/route';
-import { HTTP_CODE, responseFail } from 'common/utils/httpcode';
-import db from '@/lib/prisma';
+import db from '@/_lib/db/prisma';
+import { apiHandler } from '@/_lib/http/api-handler';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-
-  // validation session
-  if (!userId) {
-    return responseFail(HTTP_CODE.NOT_LOGGED);
-  }
+// 查询用户收藏的其他用户信息
+export const GET = apiHandler(async (req: NextRequest) => {
+  const userId = req.headers.get('userId');
 
   const result = await db
     .selectFrom('User')
@@ -27,5 +20,5 @@ export async function GET() {
     )
     .execute();
 
-  return Response.json(result);
-}
+  return NextResponse.json(result);
+});

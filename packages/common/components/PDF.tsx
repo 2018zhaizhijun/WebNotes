@@ -20,7 +20,10 @@ import './PDF.css';
 
 import { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import { HighlightType } from '../db/prisma';
+import { withErrorBoundaryCustom } from '../utils/error';
 import { API_HOST, queryParse, sendRequest } from '../utils/http';
+
+type PdfHighlighterProps = React.ComponentProps<typeof PdfHighlighter>;
 
 const parseIdFromHash = () =>
   document.location.hash.slice('#highlight-'.length);
@@ -105,7 +108,7 @@ const PDF: React.FC<PDFProps> = ({
   const getHighlights = useCallback(() => {
     if (href.startsWith(API_HOST)) {
       return sendRequest<HighlightType[]>(
-        `${API_HOST}/api/highlight?${queryParse({ url, authorId })}`,
+        `${API_HOST}/api/highlights?${queryParse({ url, authorId })}`,
         {
           method: 'GET',
         }
@@ -116,7 +119,6 @@ const PDF: React.FC<PDFProps> = ({
       chrome.runtime.sendMessage(
         { action: 'GET_HIGHLIGHTS', url, authorId },
         function (result: HighlightType[]) {
-          console.log(result);
           setHighlights(result);
         }
       );
@@ -129,14 +131,12 @@ const PDF: React.FC<PDFProps> = ({
 
   const updateHighlight = useCallback(
     (highlightId: string, position: object, content: object) => {
-      console.log('Updating highlight', highlightId, position, content);
-
       const original = highlights.find((item) => {
         return String(item.id) === highlightId;
       });
 
       if (href.startsWith(API_HOST)) {
-        sendRequest(`${API_HOST}/api/highlight/${highlightId}`, {
+        sendRequest(`${API_HOST}/api/highlights/${highlightId}`, {
           method: 'PUT',
           headers: {
             'Content-type': 'application/json; charset=UTF-8',
@@ -167,14 +167,146 @@ const PDF: React.FC<PDFProps> = ({
     [highlights, getHighlights]
   );
 
+  const deleteHighlight = useCallback(
+    (highlightId: string) => {
+      if (href.startsWith(API_HOST)) {
+        sendRequest(`${API_HOST}/api/highlights/${highlightId}`, {
+          method: 'DELETE',
+        }).then(async () => {
+          await getHighlights();
+        });
+      } else {
+        chrome.runtime.sendMessage(
+          {
+            action: 'DELETE_HIGHLIGHT',
+            highlightId,
+          },
+          () => {
+            getHighlights();
+          }
+        );
+      }
+    },
+    [getHighlights]
+  );
+
+  const onSelectionFinished: PdfHighlighterProps['onSelectionFinished'] =
+    useCallback(
+      (position, content, hideTipAndSelection, transformSelection) =>
+        readOnly ? null : (
+          <Tip
+            onConfirm={async (color: string, comment?: { text: string }) => {
+              transformSelection();
+
+              if (href.startsWith(API_HOST)) {
+                sendRequest(`${API_HOST}/api/highlights`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                  },
+                  body: JSON.stringify([
+                    {
+                      url,
+                      content,
+                      position,
+                      comment,
+                      backgroundColor: color,
+                    },
+                  ]),
+                }).then(async () => {
+                  hideTipAndSelection();
+                  await getHighlights();
+                });
+              } else {
+                chrome.runtime.sendMessage(
+                  {
+                    action: 'CREATE_HIGHLIGHT',
+                    body: JSON.stringify([
+                      {
+                        url,
+                        content,
+                        position,
+                        comment,
+                        backgroundColor: color,
+                      },
+                    ]),
+                  },
+                  function () {
+                    hideTipAndSelection();
+                    getHighlights();
+                  }
+                );
+              }
+            }}
+          />
+        ),
+      [getHighlights, readOnly, url]
+    );
+
+  const highlightTransform: PdfHighlighterProps['highlightTransform'] =
+    useCallback(
+      (
+        highlight,
+        index,
+        setTip,
+        hideTip,
+        viewportToScaled,
+        screenshot,
+        isScrolledTo
+      ) => {
+        const isTextHighlight = !(highlight.content && highlight.content.image);
+
+        const component = isTextHighlight ? (
+          <Highlight
+            isScrolledTo={isScrolledTo}
+            position={highlight.position}
+            backgroundColor={highlight.backgroundColor || undefined}
+          />
+        ) : (
+          <AreaHighlight
+            isScrolledTo={isScrolledTo}
+            highlight={highlight}
+            onChange={(boundingRect) => {
+              updateHighlight(
+                String(highlight.id),
+                { boundingRect: viewportToScaled(boundingRect) },
+                { image: screenshot(boundingRect) }
+              );
+            }}
+          />
+        );
+
+        return (
+          <Popup
+            popupContent={
+              readOnly && !highlight.comment?.text ? (
+                <></>
+              ) : (
+                <HighlightPopup
+                  {...highlight}
+                  readOnly={readOnly}
+                  deleteHighlight={() => deleteHighlight(String(highlight.id))}
+                  hideTip={hideTip}
+                />
+              )
+            }
+            onMouseOver={(popupContent) =>
+              setTip(highlight, () => popupContent)
+            }
+            onMouseOut={hideTip}
+            key={index}
+            children={component}
+          />
+        );
+      },
+      [updateHighlight, deleteHighlight, readOnly]
+    );
+
   return (
     <div
-      className="PDF"
+      className="PDF__container"
       style={{
-        display: 'flex',
         flexDirection: sidebarPosition === 'right' ? 'row-reverse' : 'row',
-        height: '100%',
-        width: '100%',
       }}
     >
       <Sidebar
@@ -183,13 +315,7 @@ const PDF: React.FC<PDFProps> = ({
         pdfDocument={pdfDocument}
         appendButtons={appendButtons}
       />
-      <div
-        style={{
-          height: '100%',
-          width: '75%',
-          position: 'relative',
-        }}
-      >
+      <div className="PDF__viewer">
         <PdfLoader
           url={url}
           beforeLoad={<Spinner />}
@@ -207,136 +333,8 @@ const PDF: React.FC<PDFProps> = ({
 
                 scrollToHighlightFromHash();
               }}
-              onSelectionFinished={(
-                position,
-                content,
-                hideTipAndSelection,
-                transformSelection
-              ) =>
-                readOnly ? null : (
-                  <Tip
-                    onConfirm={async (
-                      color: string,
-                      comment?: { text: string }
-                    ) => {
-                      transformSelection();
-
-                      if (href.startsWith(API_HOST)) {
-                        sendRequest(`${API_HOST}/api/highlight`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-type': 'application/json; charset=UTF-8',
-                          },
-                          body: JSON.stringify({
-                            url,
-                            content,
-                            position,
-                            comment,
-                            backgroundColor: color,
-                          }),
-                        }).then(async () => {
-                          hideTipAndSelection();
-                          await getHighlights();
-                        });
-                      } else {
-                        chrome.runtime.sendMessage(
-                          {
-                            action: 'CREATE_HIGHLIGHT',
-                            body: JSON.stringify({
-                              url,
-                              content,
-                              position,
-                              comment,
-                              backgroundColor: color,
-                            }),
-                          },
-                          function () {
-                            hideTipAndSelection();
-                            getHighlights();
-                          }
-                        );
-                      }
-                    }}
-                  />
-                )
-              }
-              highlightTransform={(
-                highlight,
-                index,
-                setTip,
-                hideTip,
-                viewportToScaled,
-                screenshot,
-                isScrolledTo
-              ) => {
-                const isTextHighlight = !(
-                  highlight.content && highlight.content.image
-                );
-
-                const component = isTextHighlight ? (
-                  <Highlight
-                    isScrolledTo={isScrolledTo}
-                    position={highlight.position}
-                    backgroundColor={highlight.backgroundColor || undefined}
-                  />
-                ) : (
-                  <AreaHighlight
-                    isScrolledTo={isScrolledTo}
-                    highlight={highlight}
-                    onChange={(boundingRect) => {
-                      updateHighlight(
-                        String(highlight.id),
-                        { boundingRect: viewportToScaled(boundingRect) },
-                        { image: screenshot(boundingRect) }
-                      );
-                    }}
-                  />
-                );
-
-                return (
-                  <Popup
-                    popupContent={
-                      readOnly && !highlight.comment?.text ? (
-                        <></>
-                      ) : (
-                        <HighlightPopup
-                          {...highlight}
-                          readOnly={readOnly}
-                          deleteHighlight={() => {
-                            if (href.startsWith(API_HOST)) {
-                              sendRequest(
-                                `${API_HOST}/api/highlight/${highlight.id}`,
-                                {
-                                  method: 'DELETE',
-                                }
-                              ).then(async () => {
-                                await getHighlights();
-                              });
-                            } else {
-                              chrome.runtime.sendMessage(
-                                {
-                                  action: 'DELETE_HIGHLIGHT',
-                                  highlightId: highlight.id,
-                                },
-                                () => {
-                                  getHighlights();
-                                }
-                              );
-                            }
-                          }}
-                          hideTip={hideTip}
-                        />
-                      )
-                    }
-                    onMouseOver={(popupContent) =>
-                      setTip(highlight, () => popupContent)
-                    }
-                    onMouseOut={hideTip}
-                    key={index}
-                    children={component}
-                  />
-                );
-              }}
+              onSelectionFinished={onSelectionFinished}
+              highlightTransform={highlightTransform}
               highlights={pdfDocument ? highlights : []}
             />
           ) : (
@@ -348,4 +346,4 @@ const PDF: React.FC<PDFProps> = ({
   );
 };
 
-export default PDF;
+export default withErrorBoundaryCustom<PDFProps>(PDF);

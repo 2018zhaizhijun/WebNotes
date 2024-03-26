@@ -1,7 +1,6 @@
 import { RcFile } from 'antd/es/upload';
-import { CODE_INFO, HTTP_CODE } from './httpcode';
 
-export const API_HOST = process.env.NEXT_PUBLIC_DEV_HOST;
+export const API_HOST = 'https://localhost:4000';
 
 export function queryParse(query: { [k: string]: string | undefined }): string {
   let queryText = '';
@@ -11,31 +10,6 @@ export function queryParse(query: { [k: string]: string | undefined }): string {
   }
 
   return queryText.slice(0, -1);
-}
-
-export async function sendRequest<T>(
-  api: string,
-  params: object
-  // onSuccess: (json: Object) => void,
-): Promise<T> {
-  return fetch(api, params)
-    .then(async (res) => {
-      if (res.status in HTTP_CODE) {
-        const error_message = CODE_INFO[res.status as HTTP_CODE].message;
-        console.log('err:', error_message);
-        alert(`error: ${error_message}`);
-        return;
-      }
-
-      const json = await res.json();
-      console.log(json);
-      // await onSuccess?.(json);
-      return json;
-    })
-    .catch((err) => {
-      console.log('err:', err);
-      alert(`error: ${err.message}`);
-    });
 }
 
 export const getBase64 = (img: RcFile) => {
@@ -48,3 +22,40 @@ export const getBase64 = (img: RcFile) => {
     reader.readAsDataURL(img);
   });
 };
+
+async function handleResponse(response: Response) {
+  const isJson = response.headers
+    ?.get('content-type')
+    ?.includes('application/json');
+  const data = isJson ? await response.json() : null;
+
+  // check for error response
+  if (!response.ok) {
+    if (response.status === 401) {
+      // api auto logs out on 401 Unauthorized, so redirect to login page
+      window.open(`${API_HOST}/login`, '_blank');
+    }
+
+    // get error message from body or default to response status
+    const error =
+      (data && `${data.code}: ${data.message}`) || response.statusText;
+    return Promise.reject(error);
+  }
+
+  return data;
+}
+
+export async function sendRequest<T>(
+  api: string,
+  params: object
+  // onSuccess: (json: Object) => void,
+): Promise<T> {
+  return fetch(api, params)
+    .then(handleResponse)
+    .catch((error) => {
+      console.error(`Request error
+                  api: ${api}
+                  params: ${JSON.stringify(params)}
+                  error: ${error}`);
+    });
+}

@@ -1,12 +1,12 @@
-import NextAuth from 'next-auth';
 import type { NextAuthOptions, Theme } from 'next-auth';
+import NextAuth from 'next-auth';
 // import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { KyselyAdapter } from '@auth/kysely-adapter';
 import EmailProvider from 'next-auth/providers/email';
 import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 // import prisma from "@/lib/prisma";
-import db from '@/lib/prisma';
+import db from '@/_lib/db/prisma';
 import { createTransport } from 'nodemailer';
 
 function text({ url, host }: { url: string; host: string }) {

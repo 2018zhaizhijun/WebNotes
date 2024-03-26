@@ -1,55 +1,53 @@
-// import { getServerSession } from 'next-auth/next';
-import { NextRequest } from 'next/server';
-// import { authOptions } from '@/api/auth/[...nextauth]/route';
-// import prisma from "@/lib/prisma";
-// import { HTTP_CODE, responseFail, toObject } from 'common/utils/httpcode';
-import { toObject } from 'common/utils/httpcode';
-import db from '@/lib/prisma';
+import db from '@/_lib/db/prisma';
+import { apiHandler } from '@/_lib/http/api-handler';
+import joi from 'joi';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
-  const url = req.nextUrl.searchParams.get('url');
-  const id = req.nextUrl.searchParams.get('id');
-  console.log('Get website info of ' + id + ' ' + url);
+// 查询网站信息（ pdf 的 title 和 abstract ）
+export const GET = apiHandler(
+  async (req: NextRequest) => {
+    const url = req.nextUrl.searchParams.get('url');
+    const id = req.nextUrl.searchParams.get('id');
 
-  //   const session = await getServerSession(authOptions);
-  //   const userId = session?.user?.id;
+    let query = db.selectFrom('Website');
 
-  // validation session
-  // if (!userId) {
-  //   return responseFail(HTTP_CODE.NOT_LOGGED);
-  // }
+    if (url) {
+      query = query.where('url', '=', url);
+    } else if (id) {
+      query = query.where('id', '=', Number(id));
+    }
 
-  let query = db.selectFrom('Website');
+    const result = await query.selectAll().execute();
 
-  if (url) {
-    query = query.where('url', '=', url);
-  } else {
-    query = query.where('id', '=', Number(id));
+    return NextResponse.json(result);
+  },
+  {
+    params: joi.object({
+      url: joi.string(),
+      id: joi.string(),
+    }),
   }
+);
 
-  const result = await query.selectAll().execute();
+// 添加网站信息
+export const POST = apiHandler(
+  async (req: NextRequest) => {
+    const request = await req.json();
 
-  return Response.json(result);
-}
+    await db
+      .insertInto('Website')
+      .values({
+        ...request,
+      })
+      .executeTakeFirst();
 
-export async function POST(req: NextRequest) {
-  const request = await req.json();
-  console.log(request);
-
-  //   const session = await getServerSession(authOptions);
-  //   const userId = session?.user?.id;
-
-  //   // validation session
-  //   if (!userId) {
-  //     return responseFail(HTTP_CODE.NOT_LOGGED);
-  //   }
-
-  const result = await db
-    .insertInto('Website')
-    .values({
-      ...request,
-    })
-    .executeTakeFirst();
-
-  return Response.json(toObject(result));
-}
+    return NextResponse.json(request, { status: 201 });
+  },
+  {
+    payload: joi.object({
+      url: joi.string().required(),
+      title: joi.string(),
+      abstract: joi.string(),
+    }),
+  }
+);

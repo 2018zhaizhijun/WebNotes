@@ -1,60 +1,61 @@
-import { getServerSession } from 'next-auth/next';
-import { NextRequest } from 'next/server';
-import { authOptions } from '@/api/auth/[...nextauth]/route';
-// import prisma from "@/lib/prisma";
-import { HTTP_CODE, responseFail, toObject } from 'common/utils/httpcode';
-import db from '@/lib/prisma';
+import db from '@/_lib/db/prisma';
+import { apiHandler } from '@/_lib/http/api-handler';
+import joi from 'joi';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
-  const userName = req.nextUrl.searchParams.get('name');
-  console.log('Get user info of ' + userName);
+// 获取用户信息
+// 若是根据用户名查询其他用户，则返回简化信息；若是不传入用户名，则查询当前登录用户，返回完整信息
+export const GET = apiHandler(
+  async (req: NextRequest) => {
+    const userName = req.nextUrl.searchParams.get('name');
 
-  if (userName) {
+    if (userName) {
+      const result = await db
+        .selectFrom('User')
+        .where('name', '=', userName)
+        .select(['id', 'name', 'image'])
+        .execute();
+
+      return NextResponse.json(result);
+    }
+
+    const userId = req.headers.get('userId');
+
     const result = await db
       .selectFrom('User')
-      .where('name', '=', userName)
-      .select(['id', 'name', 'image'])
+      .where('id', '=', userId)
+      .selectAll()
       .execute();
-    return Response.json(result);
+
+    return NextResponse.json(result);
+  },
+  {
+    params: joi.object({
+      name: joi.string(),
+    }),
   }
+);
 
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+// 更新用户信息
+export const PUT = apiHandler(
+  async (req: NextRequest) => {
+    const request = await req.json();
+    const userId = req.headers.get('userId');
 
-  // validation session
-  if (!userId) {
-    return responseFail(HTTP_CODE.NOT_LOGGED);
+    await db
+      .updateTable('User')
+      .set({
+        ...request,
+      })
+      .where('id', '=', userId)
+      .executeTakeFirst();
+
+    return NextResponse.json(request);
+  },
+  {
+    payload: joi.object({
+      name: joi.string(),
+      image: joi.string(),
+    }),
   }
-
-  const result = await db
-    .selectFrom('User')
-    .where('id', '=', userId)
-    .selectAll()
-    .execute();
-
-  return Response.json(result);
-}
-
-export async function PUT(req: NextRequest) {
-  const request = await req.json();
-  console.log('Update userinfo: ');
-  console.log(request);
-
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-
-  // validation session
-  if (!userId) {
-    return responseFail(HTTP_CODE.NOT_LOGGED);
-  }
-
-  const result = await db
-    .updateTable('User')
-    .set({
-      ...request,
-    })
-    .where('id', '=', userId)
-    .executeTakeFirst();
-
-  return Response.json(toObject(result));
-}
+);

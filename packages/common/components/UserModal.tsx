@@ -1,10 +1,11 @@
-import React, { useCallback, useState } from 'react';
 import { Form, Image, Input, Modal, Upload } from 'antd';
-import { API_HOST, getBase64, queryParse, sendRequest } from '../utils/http';
-import { UploadFile } from 'antd/es/upload';
-import { Session } from 'next-auth';
-import { SimplifiedUser } from 'db/prisma';
 import { RuleObject } from 'antd/es/form';
+import { UploadFile } from 'antd/es/upload';
+import { SimplifiedUser } from 'db/prisma';
+import { Session } from 'next-auth';
+import React, { useCallback, useState } from 'react';
+import { withErrorBoundaryCustom } from '../utils/error';
+import { API_HOST, getBase64, queryParse, sendRequest } from '../utils/http';
 
 interface UserModalProps {
   open: boolean;
@@ -215,4 +216,4 @@ const UserModal: React.FC<UserModalProps> = ({
   );
 };
 
-export default UserModal;
+export default withErrorBoundaryCustom<UserModalProps>(UserModal);

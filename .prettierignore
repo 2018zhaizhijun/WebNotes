@@ -2,6 +2,7 @@
 .vercel
 
 homesite/.next
+homesite/logs
 homesite/certificates
 
 crx/build

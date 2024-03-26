@@ -1,5 +1,6 @@
-import React from 'react';
 import { Form, FormInstance, Input } from 'antd';
+import React from 'react';
+import { withErrorBoundaryCustom } from '../utils/error';
 
 interface FavouriteFormProps {
   form: FormInstance;
@@ -39,4 +40,4 @@ const FavouriteForm: React.FC<FavouriteFormProps> = ({
   );
 };
 
-export default FavouriteForm;
+export default withErrorBoundaryCustom<FavouriteFormProps>(FavouriteForm);

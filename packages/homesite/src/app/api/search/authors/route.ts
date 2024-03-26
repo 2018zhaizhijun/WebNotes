@@ -1,21 +1,26 @@
-import { NextRequest } from 'next/server';
-import db from '@/lib/prisma';
+import db from '@/_lib/db/prisma';
+import { apiHandler } from '@/_lib/http/api-handler';
+import joi from 'joi';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
-  const regexp = req.nextUrl.searchParams.get('regexp');
-  console.log('Search author info by ' + regexp);
+// 搜索用户
+export const GET = apiHandler(
+  async (req: NextRequest) => {
+    const regexp = req.nextUrl.searchParams.get('regexp');
 
-  if (!regexp) {
-    return Response.json([]);
+    const author_result = await db
+      .selectFrom('User')
+      .select(['id', 'name', 'image'])
+      .where('name', 'ilike', `%${regexp}%`)
+      .execute();
+
+    return NextResponse.json({
+      author_result,
+    });
+  },
+  {
+    params: joi.object({
+      regexp: joi.string().required(),
+    }),
   }
-
-  const author_result = await db
-    .selectFrom('User')
-    .select(['id', 'name', 'image'])
-    .where('name', 'ilike', `%${regexp}%`)
-    .execute();
-
-  return Response.json({
-    author_result,
-  });
-}
+);

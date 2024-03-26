@@ -1,7 +1,6 @@
 import { HighlightType } from 'common/db/prisma';
 import { FavouriteWebsite, Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
-import { DeleteResult, InsertResult, UpdateResult } from 'kysely';
 import { Session } from 'next-auth';
 
 chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
@@ -20,7 +19,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
 
     return true; // Will respond asynchronously.
   } else if (request.action === 'LOG_OUT') {
-    console.log('running auth check');
+    console.log('log out');
 
     const cookiesToDelete = [
       { url: API_HOST, name: '__Host-next-auth.csrf-token' },
@@ -38,7 +37,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'GET_HIGHLIGHTS') {
     sendRequest<HighlightType[]>(
-      `${API_HOST}/api/highlight?${queryParse({ url: request.url })}`,
+      `${API_HOST}/api/highlights?${queryParse({
+        url: request.url,
+        authorId: request.authorId,
+      })}`,
       {
         method: 'GET',
       }
@@ -47,21 +49,18 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'UPDATE_HIGHLIGHT') {
-    sendRequest<UpdateResult>(
-      `${API_HOST}/api/highlight/${request.highlightId}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-        body: request.body,
-      }
-    ).then((res) => {
+    sendRequest(`${API_HOST}/api/highlights/${request.highlightId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: request.body,
+    }).then((res) => {
       onSuccess(res);
     });
     return true;
   } else if (request.action === 'CREATE_HIGHLIGHT') {
-    sendRequest<InsertResult>(`${API_HOST}/api/highlight`, {
+    sendRequest(`${API_HOST}/api/highlights`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -72,12 +71,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'DELETE_HIGHLIGHT') {
-    sendRequest<DeleteResult>(
-      `${API_HOST}/api/highlight/${request.highlightId}`,
-      {
-        method: 'DELETE',
-      }
-    ).then((res) => {
+    sendRequest(`${API_HOST}/api/highlights/${request.highlightId}`, {
+      method: 'DELETE',
+    }).then((res) => {
       onSuccess(res);
     });
     return true;
@@ -93,7 +89,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'CREATE_WEBSITE_INFO') {
-    sendRequest<InsertResult>(`${API_HOST}/api/website`, {
+    sendRequest(`${API_HOST}/api/website`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -105,7 +101,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'GET_FAVOURITE_WEBSITE_INFO') {
     sendRequest<FavouriteWebsite[]>(
-      `${API_HOST}/api/favourite/website?${queryParse({
+      `${API_HOST}/api/favourite/websites?${queryParse({
         url: request.url,
       })}`,
       {
@@ -116,7 +112,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'CREATE_FAVOURITE_WEBSITE_INFO') {
-    sendRequest<InsertResult>(`${API_HOST}/api/favourite/website`, {
+    sendRequest(`${API_HOST}/api/favourite/websites`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -127,8 +123,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'UPDATE_FAVOURITE_WEBSITE_INFO') {
-    sendRequest<UpdateResult>(
-      `${API_HOST}/api/favourite/website?${queryParse({
+    sendRequest(
+      `${API_HOST}/api/favourite/websites?${queryParse({
         url: request.url,
       })}`,
       {
@@ -143,8 +139,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'DELETE_FAVOURITE_WEBSITE_INFO') {
-    sendRequest<DeleteResult>(
-      `${API_HOST}/api/favourite/website?${queryParse({
+    sendRequest(
+      `${API_HOST}/api/favourite/websites?${queryParse({
         url: request.url,
       })}`,
       {

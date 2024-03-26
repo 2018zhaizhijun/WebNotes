@@ -77,3 +77,15 @@ blockquote:after {
 .favourite-form .ant-form-item {
   margin-bottom: 8px;
 }
+
+.PDF__container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.PDF__viewer {
+  height: 100%;
+  width: 75%;
+  position: relative;
+}

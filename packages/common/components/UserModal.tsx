@@ -1,4 +1,4 @@
-import { Form, Image, Input, Modal, Upload } from 'antd';
+import { Form, Input, Modal, Upload } from 'antd';
 import { RuleObject } from 'antd/es/form';
 import { UploadFile } from 'antd/es/upload';
 import { SimplifiedUser } from 'db/prisma';
@@ -52,7 +52,7 @@ const UserModal: React.FC<UserModalProps> = ({
           method: 'GET',
         }
       ).then((json) => {
-        if (json.length > 0) {
+        if (json?.length > 0) {
           callback('User name already exists');
         }
         callback();
@@ -196,7 +196,7 @@ const UserModal: React.FC<UserModalProps> = ({
               //   onChange={handleChange}
               fileList={fileList}
             >
-              <Image
+              <img
                 src={fileList[0].url}
                 alt="avatar"
                 style={{ width: '100%' }}

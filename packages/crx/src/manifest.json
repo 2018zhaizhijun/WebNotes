@@ -16,7 +16,11 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*.pdf", "https://*/*.pdf"],
+      "matches": [
+        "http://*/*.pdf",
+        "https://*/*.pdf",
+        "https://arxiv.org/pdf/*"
+      ],
       "js": ["contentScript.bundle.js"],
       "css": ["content.styles.css"]
     }

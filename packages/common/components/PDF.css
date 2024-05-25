@@ -63,10 +63,10 @@ blockquote:after {
   content: close-quote;
 }
 
-.Highlight__popup button {
+.Highlight__popup .anticon {
   transition: color 0.2s;
 }
-.Highlight__popup button:hover {
+.Highlight__popup .anticon:hover {
   color: #f12901;
 }
 

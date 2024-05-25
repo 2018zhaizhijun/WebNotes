@@ -31,7 +31,7 @@ async function handleResponse(response: Response) {
 
   // check for error response
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status == 401) {
       // api auto logs out on 401 Unauthorized, so redirect to login page
       window.open(`${API_HOST}/login`, '_blank');
     }

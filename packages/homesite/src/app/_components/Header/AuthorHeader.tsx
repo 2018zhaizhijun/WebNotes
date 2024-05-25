@@ -28,7 +28,7 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
         method: 'GET',
       }
     ).then((json) => {
-      if (json.length > 0) {
+      if (json?.length > 0) {
         setFavouriteInfo(json[0]);
       }
     });

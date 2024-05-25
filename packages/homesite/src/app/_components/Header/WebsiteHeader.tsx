@@ -29,7 +29,7 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
         method: 'GET',
       }
     ).then((json) => {
-      if (json.length > 0) {
+      if (json?.length > 0) {
         setFavouriteInfo(json[0]);
       }
     });

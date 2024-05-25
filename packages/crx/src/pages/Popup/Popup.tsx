@@ -1,11 +1,11 @@
+import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Avatar, Image, Popconfirm } from 'antd';
+import UserModal from 'common/components/UserModal';
+import { API_HOST } from 'common/utils/http';
+import { Session } from 'next-auth';
 import React, { useCallback, useEffect, useState } from 'react';
 import logo from '../../assets/img/logo.svg';
 import './Popup.css';
-import { Avatar, Image, Popconfirm } from 'antd';
-import UserModal from 'common/components/UserModal';
-import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
-import { API_HOST } from 'common/utils/http';
-import { Session } from 'next-auth';
 
 const Popup: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);

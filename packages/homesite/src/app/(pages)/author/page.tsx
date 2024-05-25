@@ -12,7 +12,7 @@ function HomePage() {
     return sendRequest<SimplifiedUser[]>(`${API_HOST}/api/user`, {
       method: 'GET',
     }).then((json) => {
-      if (json.length > 0) {
+      if (json?.length > 0) {
         router.push(`/author/${json[0].name}`);
       }
     });

@@ -1,0 +1,16 @@
+html,
+body {
+  height: auto;
+  min-height: 100%;
+}
+
+.container {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 50px;
+}
+
+.swagger-ui .opblock-summary-control:focus {
+  outline: none;
+}

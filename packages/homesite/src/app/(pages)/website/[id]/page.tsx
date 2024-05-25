@@ -16,7 +16,7 @@ function WebsiteHomePage({ params }: { params: { id: number } }) {
         method: 'GET',
       }
     ).then((json) => {
-      if (json.length > 0) {
+      if (json?.length > 0) {
         setWebsiteInfo(json[0]);
       }
     });

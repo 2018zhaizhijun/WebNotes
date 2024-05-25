@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const path = require('path');
+
 const nextConfig = {
   webpack: (config, options) => {
     // Important: return the modified config

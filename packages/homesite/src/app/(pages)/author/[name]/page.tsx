@@ -16,7 +16,7 @@ function AuthorHomePage({ params }: { params: { name: string } }) {
         method: 'GET',
       }
     ).then((json) => {
-      if (json.length > 0) {
+      if (json?.length > 0) {
         setAuthorInfo(json[0]);
       }
     });

@@ -3,8 +3,36 @@ import { apiHandler } from '@/_lib/http/api-handler';
 import joi from 'joi';
 import { NextRequest, NextResponse } from 'next/server';
 
-// 获取用户信息
-// 若是根据用户名查询其他用户，则返回简化信息；若是不传入用户名，则查询当前登录用户，返回完整信息
+/**
+ * @swagger
+ * /api/user:
+ *   get:
+ *     description: Get user information. If name is provided, return simplified information; otherwise, return full information
+ *     parameters:
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: The user name
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 image:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 emailVerified:
+ *                   type: string
+ */
 export const GET = apiHandler(
   async (req: NextRequest) => {
     const userName = req.nextUrl.searchParams.get('name');
@@ -36,7 +64,34 @@ export const GET = apiHandler(
   }
 );
 
-// 更新用户信息
+/**
+ * @swagger
+ * /api/user:
+ *   put:
+ *     description: Update user information
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                 image:
+ *                   type: string
+ */
 export const PUT = apiHandler(
   async (req: NextRequest) => {
     const request = await req.json();

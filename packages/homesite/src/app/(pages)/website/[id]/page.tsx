@@ -3,7 +3,6 @@
 import WebsiteHome from '@/_components/Home/WebsiteHome';
 import { Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
-import { SessionProvider } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
 
 function WebsiteHomePage({ params }: { params: { id: number } }) {
@@ -28,11 +27,7 @@ function WebsiteHomePage({ params }: { params: { id: number } }) {
     }
   }, [params.id, getWebsiteInfo]);
 
-  return (
-    <SessionProvider>
-      {websiteInfo && <WebsiteHome websiteInfo={websiteInfo} />}
-    </SessionProvider>
-  );
+  return <>{websiteInfo && <WebsiteHome websiteInfo={websiteInfo} />}</>;
 }
 
 export default WebsiteHomePage;

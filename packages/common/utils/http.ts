@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import { RcFile } from 'antd/es/upload';
 
 export const API_HOST = 'https://localhost:4000';
@@ -33,7 +34,8 @@ async function handleResponse(response: Response) {
   if (!response.ok) {
     if (response.status == 401) {
       // api auto logs out on 401 Unauthorized, so redirect to login page
-      window.open(`${API_HOST}/login`, '_blank');
+      message.info('Please log in');
+      // window.open(`${API_HOST}/login`, '_blank');
     }
 
     // get error message from body or default to response status

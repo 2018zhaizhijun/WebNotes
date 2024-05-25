@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 const LogIn: React.FC = () => {
   useEffect(() => {
     signIn(undefined, {
-      redirect: false,
+      redirect: true,
       callbackUrl: '/author',
     });
   }, []);

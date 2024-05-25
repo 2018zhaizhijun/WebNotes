@@ -7,10 +7,15 @@ import { NextRequest, NextResponse } from 'next/server';
  * @swagger
  * /api/user:
  *   get:
- *     description: Get user information. If name is provided, return simplified information; otherwise, return full information
+ *     description: Get user information. If id is provided, return full information; otherwise, return simplified information
  *     parameters:
- *       - in: query
- *         name: name
+ *       - name: id
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: The user id
+ *       - name: name
+ *         in: query
  *         schema:
  *           type: string
  *         description: The user name
@@ -35,30 +40,29 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export const GET = apiHandler(
   async (req: NextRequest) => {
+    const userId = req.nextUrl.searchParams.get('id');
     const userName = req.nextUrl.searchParams.get('name');
 
-    if (userName) {
-      const result = await db
+    let result;
+    if (userId) {
+      result = await db
+        .selectFrom('User')
+        .where('id', '=', userId)
+        .selectAll()
+        .execute();
+    } else if (userName) {
+      result = await db
         .selectFrom('User')
         .where('name', '=', userName)
         .select(['id', 'name', 'image'])
         .execute();
-
-      return NextResponse.json(result);
     }
-
-    const userId = req.headers.get('userId');
-
-    const result = await db
-      .selectFrom('User')
-      .where('id', '=', userId)
-      .selectAll()
-      .execute();
 
     return NextResponse.json(result);
   },
   {
     params: joi.object({
+      id: joi.string(),
       name: joi.string(),
     }),
   }

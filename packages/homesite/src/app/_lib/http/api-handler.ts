@@ -6,8 +6,12 @@ import { ResponseError, errorHandler } from './error-handler';
 function isPublicPath(req: NextRequest) {
   // public routes that don't require authentication
   const publicPaths = [
+    'GET:/api/user',
     'GET:/api/highlights',
     'GET:/api/pdf',
+    'GET:/api/favourite/users',
+    'GET:/api/favourite/websites',
+    'GET:/api/favourite/notes',
     'GET:/api/query/authors',
     'GET:/api/query/websites',
     'GET:/api/search/authors',

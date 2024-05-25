@@ -69,7 +69,7 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
       <div className="header__title">
         <span>{'Author / '}</span>
         <span className="header__title__name">{authorInfo.name}</span>
-        {session && authorInfo.name !== session.user.name ? (
+        {authorInfo.name !== session?.user.name ? (
           <FavouriteIcon
             className="header__title__favourite-icon"
             style={{

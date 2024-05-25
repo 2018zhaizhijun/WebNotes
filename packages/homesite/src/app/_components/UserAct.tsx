@@ -1,5 +1,5 @@
 import { EditOutlined, HeartOutlined, LogoutOutlined } from '@ant-design/icons';
-import { Avatar, Divider, Drawer, Modal } from 'antd';
+import { Avatar, Button, Divider, Drawer, Modal } from 'antd';
 import UserModal from 'common/components/UserModal';
 import { SimplifiedUser } from 'common/db/prisma';
 import { withErrorBoundaryCustom } from 'common/utils/error';
@@ -27,8 +27,8 @@ const UserAct: React.FC = () => {
   }, [setFavouriteUsers]);
 
   useEffect(() => {
-    getFavouriteInfo();
-  }, [getFavouriteInfo]);
+    session && getFavouriteInfo();
+  }, [session, getFavouriteInfo]);
 
   return (
     <>
@@ -102,7 +102,10 @@ const UserAct: React.FC = () => {
           </Drawer>
         </>
       ) : (
-        <button onClick={() => signIn()}>Log in</button>
+        // signIn() 默认参数 callbackUrl = window.location.href, redirect = true
+        <Button onClick={() => signIn()} type="link">
+          Log in
+        </Button>
       )}
     </>
   );

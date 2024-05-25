@@ -3,7 +3,6 @@
 import AuthorHome from '@/_components/Home/AuthorHome';
 import { SimplifiedUser } from 'common/db/prisma';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
-import { SessionProvider } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
 
 function AuthorHomePage({ params }: { params: { name: string } }) {
@@ -26,11 +25,7 @@ function AuthorHomePage({ params }: { params: { name: string } }) {
     getAuthorInfo();
   }, [getAuthorInfo]);
 
-  return (
-    <SessionProvider>
-      {authorInfo && <AuthorHome authorInfo={authorInfo} />}
-    </SessionProvider>
-  );
+  return <>{authorInfo && <AuthorHome authorInfo={authorInfo} />}</>;
 }
 
 export default AuthorHomePage;

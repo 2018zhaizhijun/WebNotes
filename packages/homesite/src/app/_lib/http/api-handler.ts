@@ -8,6 +8,7 @@ function isPublicPath(req: NextRequest) {
   const publicPaths = [
     'GET:/api/user',
     'GET:/api/highlights',
+    'GET:/api/strokes',
     'GET:/api/pdf',
     'GET:/api/favourite/users',
     'GET:/api/favourite/websites',

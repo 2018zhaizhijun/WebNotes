@@ -67,6 +67,13 @@ export interface ViewportHighlight extends HighlightContent, HighlightComment {
 
 export interface Viewport {
   convertToPdfPoint: (x: number, y: number) => Array<number>;
+  convertToViewportPoint: (
+    x: number,
+    y: number
+  ) => {
+    x: number;
+    y: number;
+  };
   convertToViewportRectangle: (pdfRectangle: Array<number>) => Array<number>;
   width: number;
   height: number;
@@ -75,4 +82,29 @@ export interface Viewport {
 export interface Page {
   node: HTMLElement;
   number: number;
+}
+
+export interface Coords {
+  x: number;
+  y: number;
+}
+
+export interface ScaledPath {
+  coords: Array<Coords>;
+  width: number;
+  height: number;
+}
+
+export interface ScaledStrokePosition {
+  boundingRect: Scaled;
+  path: ScaledPath;
+  pageNumber: number;
+  usePdfCoordinates?: boolean;
+}
+
+export interface StrokePosition {
+  boundingRect: LTWHP;
+  path: Array<Coords>;
+  pageNumber: number;
+  usePdfCoordinates?: boolean;
 }

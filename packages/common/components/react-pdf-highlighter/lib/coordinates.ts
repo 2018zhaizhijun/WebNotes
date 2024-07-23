@@ -4,7 +4,7 @@
 // for clarity reasons I decided not to store actual (0, 1) coordinates, but
 // provide width and height, so user can compute ratio himself if needed
 
-import type { LTWHP, Scaled, Viewport } from '../types';
+import type { Coords, LTWHP, Scaled, ScaledPath, Viewport } from '../types';
 
 interface WIDTH_HEIGHT {
   width: number;
@@ -76,4 +76,32 @@ export const scaledToViewport = (
     height: y2 - y1,
     pageNumber: scaled.pageNumber,
   };
+};
+
+const pdfPointToViewport = (
+  pdfPoints: Coords[],
+  viewport: Viewport
+): Coords[] => {
+  return pdfPoints.map((pdfPoint) => {
+    return viewport.convertToViewportPoint(pdfPoint.x, pdfPoint.y);
+  });
+};
+
+export const scaledCoordToCtx = (
+  scaled: ScaledPath,
+  // viewport: Viewport,
+  // usePdfCoordinates = false,
+  canvas: HTMLCanvasElement
+): Array<Coords> => {
+  // const { width, height } = viewport;
+  const { height: ctxHeight, width: ctxWidth } = canvas;
+
+  const coords = scaled.coords.map((coord) => {
+    return {
+      x: (ctxWidth * coord.x) / scaled.width,
+      y: (ctxHeight * coord.y) / scaled.height,
+    };
+  });
+
+  return coords;
 };

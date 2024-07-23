@@ -1,7 +1,7 @@
 /* overrides for pdf_viewer.css from PDF.JS web viewer */
 
 .textLayer {
-  z-index: 2;
+  z-index: 0;
   opacity: 1;
   mix-blend-mode: multiply;
   display: flex;

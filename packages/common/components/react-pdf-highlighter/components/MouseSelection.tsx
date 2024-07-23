@@ -3,12 +3,7 @@ import React, { Component } from 'react';
 import { asElement, isHTMLElement } from '../lib/pdfjs-dom';
 import '../style/MouseSelection.css';
 
-import type { LTWH } from '../types.js';
-
-interface Coords {
-  x: number;
-  y: number;
-}
+import type { Coords, LTWH } from '../types.js';
 
 interface State {
   locked: boolean;

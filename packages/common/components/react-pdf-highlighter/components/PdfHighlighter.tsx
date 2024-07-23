@@ -1,24 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import 'pdfjs-dist/web/pdf_viewer.css';
-import '../style/pdf_viewer.css';
 import '../style/PdfHighlighter.css';
+import '../style/pdf_viewer.css';
 
+import { Color } from 'antd/es/color-picker/color';
+import { StrokeType } from 'db/prisma';
+import debounce from 'lodash.debounce';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import {
   EventBus,
   NullL10n,
   PDFLinkService,
   PDFViewer,
 } from 'pdfjs-dist/legacy/web/pdf_viewer';
-import type {
-  IHighlight,
-  LTWH,
-  LTWHP,
-  Position,
-  Scaled,
-  ScaledPosition,
-} from '../types';
 import React, { PointerEventHandler, PureComponent, RefObject } from 'react';
+import { Root, createRoot } from 'react-dom/client';
+import {
+  scaledCoordToCtx,
+  scaledToViewport,
+  viewportToScaled,
+} from '../lib/coordinates';
+import getAreaAsPng from '../lib/get-area-as-png';
+import {
+  getBoundingRect,
+  getBoundingRectFromPath,
+} from '../lib/get-bounding-rect';
+import getClientRects from '../lib/get-client-rects';
 import {
   asElement,
   findOrCreateContainerLayer,
@@ -27,18 +35,29 @@ import {
   getWindow,
   isHTMLElement,
 } from '../lib/pdfjs-dom';
-import { scaledToViewport, viewportToScaled } from '../lib/coordinates';
-import MouseSelection from './MouseSelection';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
-import TipContainer from './TipContainer';
-import { createRoot, Root } from 'react-dom/client';
-import debounce from 'lodash.debounce';
-import getAreaAsPng from '../lib/get-area-as-png';
-import getBoundingRect from '../lib/get-bounding-rect';
-import getClientRects from '../lib/get-client-rects';
+import type {
+  Coords,
+  IHighlight,
+  LTWH,
+  LTWHP,
+  Page,
+  Position,
+  Scaled,
+  ScaledPosition,
+  ScaledStrokePosition,
+  StrokePosition,
+} from '../types';
 import { HighlightLayer } from './HighlightLayer';
+import MouseSelection from './MouseSelection';
+import MouseStroking from './MouseStroking';
+import TipContainer from './TipContainer';
+import ToolBar from './ToolBar';
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
+
+export const EditMode = {
+  STROKING: 'stroking',
+};
 
 interface State<T_HT> {
   // ghostHighlight有什么作用？
@@ -56,6 +75,10 @@ interface State<T_HT> {
   tipChildren: JSX.Element | null;
   isAreaSelectionInProgress: boolean;
   scrolledToHighlightId: string;
+
+  color: string;
+  strokeWidth: number;
+  activated: string;
 }
 
 interface Props<T_HT> {
@@ -83,6 +106,9 @@ interface Props<T_HT> {
     transformSelection: () => void
   ) => JSX.Element | null;
   enableAreaSelection: (event: MouseEvent) => boolean;
+
+  strokes: Array<StrokeType>;
+  onStrokeEnd: (payload: Partial<StrokeType>) => void;
 }
 
 const EMPTY_ID = 'empty-id';
@@ -104,6 +130,10 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     tip: null,
     tipPosition: null,
     tipChildren: null,
+
+    color: '#ffe28f',
+    strokeWidth: 4,
+    activated: '',
   };
 
   eventBus = new EventBus();
@@ -119,6 +149,9 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   containerNodeRef: RefObject<HTMLDivElement>;
   highlightRoots: {
     [page: number]: { reactRoot: Root; container: Element };
+  } = {};
+  strokeRoots: {
+    [page: number]: { canvas: HTMLCanvasElement; container: Element };
   } = {};
   unsubscribe = () => {};
 
@@ -169,6 +202,9 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     }
     if (prevProps.highlights !== this.props.highlights) {
       this.renderHighlightLayers();
+    }
+    if (prevProps.strokes !== this.props.strokes) {
+      this.renderStrokeLayers();
     }
   }
 
@@ -261,6 +297,33 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     return groupedHighlights;
   }
 
+  groupStrokesByPage(strokes: Array<StrokeType>): {
+    [pageNumber: string]: Array<StrokeType>;
+  } {
+    const allStrokes = [...strokes].filter(Boolean);
+
+    const pageNumbers = new Set<number>();
+    for (const stroke of allStrokes) {
+      pageNumbers.add(stroke.position.pageNumber);
+      if (stroke.position.boundingRect.pageNumber) {
+        pageNumbers.add(stroke.position.boundingRect.pageNumber);
+      }
+    }
+
+    const groupedStrokes = {} as Record<number, any[]>;
+
+    for (const pageNumber of pageNumbers) {
+      groupedStrokes[pageNumber] = groupedStrokes[pageNumber] || [];
+      for (const stroke of allStrokes) {
+        if (pageNumber === stroke.position.pageNumber) {
+          groupedStrokes[pageNumber].push(stroke);
+        }
+      }
+    }
+
+    return groupedStrokes;
+  }
+
   showTip(highlight: T_ViewportHighlight<T_HT>, content: JSX.Element) {
     const { isCollapsed, isAreaSelectionInProgress } = this.state;
 
@@ -273,18 +336,33 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     this.setTip(highlight.position, content);
   }
 
-  scaledPositionToViewport({
-    pageNumber,
-    boundingRect,
-    rects,
-    usePdfCoordinates,
-  }: ScaledPosition): Position {
+  scaledPositionToViewport(position: ScaledPosition): Position {
+    const { pageNumber, boundingRect, usePdfCoordinates } = position;
     const viewport = this.viewer.getPageView(pageNumber - 1).viewport;
 
     return {
       boundingRect: scaledToViewport(boundingRect, viewport, usePdfCoordinates),
-      rects: (rects || []).map((rect) =>
+      rects: (position.rects || []).map((rect) =>
         scaledToViewport(rect, viewport, usePdfCoordinates)
+      ),
+      pageNumber,
+    };
+  }
+
+  scaledStrokePositionToViewport(
+    position: ScaledStrokePosition,
+    canvas: HTMLCanvasElement
+  ): StrokePosition {
+    const { pageNumber, boundingRect, usePdfCoordinates } = position;
+    const viewport = this.viewer.getPageView(pageNumber - 1).viewport;
+
+    return {
+      boundingRect: scaledToViewport(boundingRect, viewport, usePdfCoordinates),
+      path: scaledCoordToCtx(
+        position.path,
+        // viewport,
+        // usePdfCoordinates,
+        canvas
       ),
       pageNumber,
     };
@@ -369,6 +447,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   onTextLayerRendered = () => {
     this.renderHighlightLayers();
+    this.renderStrokeLayers();
   };
 
   scrollTo = (highlight: T_HT) => {
@@ -547,11 +626,30 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   debouncedScaleValue: () => void = debounce(this.handleScaleValue, 500);
 
+  onColorChange = (color: Color) => {
+    this.setState({ color: '#' + color.toHex() });
+  };
+
+  onStrokeWidthChange = (width: number) => {
+    this.setState({ strokeWidth: width });
+  };
+
   render() {
-    const { onSelectionFinished, enableAreaSelection } = this.props;
+    const { onSelectionFinished, enableAreaSelection, onStrokeEnd } =
+      this.props;
 
     return (
       <div onPointerDown={this.onMouseDown}>
+        <ToolBar
+          color={this.state.color}
+          strokeWidth={this.state.strokeWidth}
+          activated={this.state.activated}
+          onColorChange={this.onColorChange}
+          onStrokeWidthChange={this.onStrokeWidthChange}
+          setActivated={(mode: string) => {
+            this.setState({ activated: mode });
+          }}
+        />
         <div
           ref={this.containerNodeRef}
           className="PdfHighlighter"
@@ -559,7 +657,8 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         >
           <div className="pdfViewer" />
           {this.renderTip()}
-          {typeof enableAreaSelection === 'function' ? (
+          {typeof enableAreaSelection === 'function' &&
+          this.state.activated !== EditMode.STROKING ? (
             <MouseSelection
               onDragStart={() => this.toggleTextSelection(true)}
               onDragEnd={() => this.toggleTextSelection(false)}
@@ -627,6 +726,40 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
               }}
             />
           ) : null}
+          {this.state.activated === EditMode.STROKING ? (
+            <MouseStroking
+              color={this.state.color}
+              strokeWidth={this.state.strokeWidth}
+              onStrokeEnd={(page: Page, path: Array<Coords>) => {
+                // const page = getPageFromElement(startTarget);
+
+                // if (!page) {
+                //   return;
+                // }
+
+                const boundingRect = getBoundingRectFromPath(path, page.number);
+                const pageRect = page.node.getBoundingClientRect();
+
+                onStrokeEnd({
+                  position: {
+                    path: {
+                      coords: path,
+                      width: pageRect.width,
+                      height: pageRect.height,
+                    },
+                    boundingRect: {
+                      ...boundingRect,
+                      width: pageRect.width,
+                      height: pageRect.height,
+                    } as Scaled,
+                    pageNumber: page.number,
+                  },
+                  color: this.state.color,
+                  strokeWidth: this.state.strokeWidth,
+                });
+              }}
+            />
+          ) : null}
         </div>
       </div>
     );
@@ -671,5 +804,65 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         setState={this.setState.bind(this)}
       />
     );
+  }
+
+  private renderStrokeLayers() {
+    const { pdfDocument, strokes } = this.props;
+    for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
+      const strokeRoot = this.strokeRoots[pageNumber];
+
+      const strokesByPage = this.groupStrokesByPage(strokes);
+      const pageStrokes = strokesByPage[String(pageNumber)] || [];
+
+      /** Need to check if container is still attached to the DOM as PDF.js can unload pages. */
+      if (strokeRoot && strokeRoot.container.isConnected) {
+        this.renderStrokeLayer(strokeRoot.canvas, pageStrokes);
+      } else {
+        const strokeLayer = this.findOrCreateHighlightLayer(pageNumber);
+        if (strokeLayer) {
+          const canvas = document.getElementsByTagName('canvas')[
+            pageNumber - 1
+          ] as HTMLCanvasElement;
+          this.strokeRoots[pageNumber] = {
+            canvas,
+            container: strokeLayer,
+          };
+          this.renderStrokeLayer(canvas, pageStrokes);
+        }
+      }
+    }
+  }
+
+  private renderStrokeLayer(
+    canvas: HTMLCanvasElement,
+    pageStrokes: Array<StrokeType>
+  ) {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    pageStrokes.forEach((stroke) => {
+      const { color, strokeWidth } = stroke;
+      const path = this.scaledStrokePositionToViewport(
+        stroke.position,
+        canvas
+      ).path;
+
+      ctx.strokeStyle = color || 'black';
+      ctx.lineWidth = strokeWidth;
+
+      ctx.beginPath();
+      ctx.moveTo(path[0].x, path[0].y);
+
+      for (let i = 1; i < path.length; i++) {
+        ctx.lineTo(path[i].x, path[i].y);
+      }
+
+      ctx.stroke();
+    });
   }
 }

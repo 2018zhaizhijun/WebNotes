@@ -25,6 +25,11 @@ export const DELETE = apiHandler(
       .executeTakeFirst();
 
     return NextResponse.json({});
+  },
+  {
+    params: joi.object({
+      id: joi.string(),
+    }),
   }
 );
 

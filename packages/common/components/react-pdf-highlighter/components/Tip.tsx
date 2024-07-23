@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import {
   CheckOutlined,
@@ -8,18 +8,9 @@ import {
 import TextArea from 'antd/es/input/TextArea';
 import '../style/Tip.css';
 
-import { green, presetPalettes, red, yellow } from '@ant-design/colors';
-import type { ColorPickerProps } from 'antd';
 import { ColorPicker } from 'antd';
 import styled from 'styled-components';
-
-type Presets = Required<ColorPickerProps>['presets'][number];
-
-const genPresets = (presets = presetPalettes) =>
-  Object.entries(presets).map<Presets>(([label, colors]) => ({
-    label,
-    colors,
-  }));
+import { getPopupContainer, presets } from '../lib/utils';
 
 interface Props {
   onConfirm: (color: string, comment?: { text: string }) => void;
@@ -40,14 +31,6 @@ export function Tip({ onConfirm }: Props) {
   const [compact, setCompact] = useState<boolean>(true);
   const [text, setText] = useState<string>('');
   const [color, setColor] = useState<string>('#ffe28f');
-
-  const presets = useMemo(() => {
-    return genPresets({ yellow, red, green });
-  }, []);
-
-  const getPopupContainer = useCallback((triggerNode: HTMLElement) => {
-    return triggerNode.parentNode as HTMLElement;
-  }, []);
 
   return (
     <div className="Tip">

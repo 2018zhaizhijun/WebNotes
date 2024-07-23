@@ -42,7 +42,7 @@ export type Highlight = {
   position: unknown;
   comment: unknown | null;
   backgroundColor: string | null;
-  privacy: Generated<boolean>;
+  privacy: Generated<boolean | null>;
   authorId: string;
 };
 export type Session = {
@@ -50,6 +50,16 @@ export type Session = {
   sessionToken: string;
   userId: string;
   expires: Timestamp;
+};
+export type Stroke = {
+  id: Generated<number>;
+  url: string;
+  position: unknown;
+  color: string | null;
+  strokeWidth: number;
+  privacy: Generated<boolean | null>;
+  authorId: string;
+  createdAt: Generated<Timestamp>;
 };
 export type User = {
   id: Generated<string>;
@@ -76,6 +86,7 @@ export type DB = {
   FavouriteWebsite: FavouriteWebsite;
   Highlight: Highlight;
   Session: Session;
+  Stroke: Stroke;
   User: User;
   VerificationToken: VerificationToken;
   Website: Website;

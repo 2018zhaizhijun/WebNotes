@@ -1,6 +1,6 @@
-import type { LTWHP } from '../types.js';
+import type { Coords, LTWHP, Scaled } from '../types.js';
 
-const getBoundingRect = (clientRects: Array<LTWHP>): LTWHP => {
+export const getBoundingRect = (clientRects: Array<LTWHP>): LTWHP => {
   const rects = Array.from(clientRects).map((rect) => {
     const { left, top, width, height, pageNumber } = rect;
 
@@ -51,4 +51,31 @@ const getBoundingRect = (clientRects: Array<LTWHP>): LTWHP => {
   };
 };
 
-export default getBoundingRect;
+export const getBoundingRectFromPath = (
+  path: Array<Coords>,
+  pageNumber: number
+): Partial<Scaled> => {
+  const filteredPath = path.filter((coord) => coord.x > 0 || coord.y > 0);
+
+  const optimal = filteredPath.reduce(
+    (res, coord) => {
+      return {
+        x1: Math.min(res.x1, coord.x),
+        x2: Math.max(res.x2, coord.x),
+        y1: Math.min(res.y1, coord.y),
+        y2: Math.max(res.y2, coord.y),
+      };
+    },
+    {
+      x1: Number.MAX_SAFE_INTEGER,
+      x2: Number.MIN_SAFE_INTEGER,
+      y1: Number.MAX_SAFE_INTEGER,
+      y2: Number.MIN_SAFE_INTEGER,
+    }
+  );
+
+  return {
+    ...optimal,
+    pageNumber,
+  };
+};

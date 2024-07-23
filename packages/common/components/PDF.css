@@ -4,19 +4,19 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   background-color: #ffffff;
-  color: #fff;
+  color: black;
 }
 
 .sidebar {
   overflow: auto;
   color: rgb(119, 119, 119);
-  background: linear-gradient(
+  /* background: linear-gradient(
     rgb(249, 248, 247),
     rgb(251, 250, 248) 46px,
     rgb(251, 251, 249) 120px,
     rgb(248, 247, 245) 35%,
     rgb(249, 248, 246)
-  );
+  ); */
 }
 
 .sidebar__highlights {
@@ -40,11 +40,15 @@ body {
   padding: 1rem;
   cursor: pointer;
   transition: background 140ms ease-in;
-  border-bottom: 1px solid rgb(119, 119, 119);
+  border-bottom: 1px solid rgb(216 216 216);
+}
+
+.sidebar__highlight:first-child {
+  border-top: 1px solid rgb(216 216 216);
 }
 
 .sidebar__highlight:hover {
-  background: rgba(58, 56, 52, 0.08);
+  background: rgba(142, 141, 141, 0.08);
 }
 
 a {
@@ -88,4 +92,24 @@ blockquote:after {
   height: 100%;
   width: 75%;
   position: relative;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-dr {
+  flex-direction: row;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.align-c {
+  align-items: center;
 }

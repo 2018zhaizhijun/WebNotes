@@ -33,7 +33,7 @@ const SidebarButtons: React.FC<SidebarButtonsProps> = ({
   );
 
   return (
-    <div style={{ background: 'rgb(249, 248, 247)', padding: '10px 0' }}>
+    <div style={{ padding: '10px 0' }}>
       <Button type="text" onClick={() => router.push(homepageUrl)}>
         Visit Homepage
       </Button>

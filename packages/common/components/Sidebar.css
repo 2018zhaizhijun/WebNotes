@@ -1,5 +1,7 @@
 .sidebar {
   width: 25%;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: '#ffffff';
 }
 
 .sidebar__description {
@@ -8,7 +10,7 @@
 
 .sidebar__description__title {
   margin-bottom: 1rem;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 }
 
 .sidebar__favourite__icon {
@@ -20,4 +22,5 @@
 .highlight__text,
 .highlight__image {
   margin-top: 0.5rem;
+  font-size: 0.9rem;
 }

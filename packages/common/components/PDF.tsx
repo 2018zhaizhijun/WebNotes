@@ -19,7 +19,7 @@ import { Space } from 'antd';
 import './PDF.css';
 
 import { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
-import { HighlightType } from '../db/prisma';
+import { HighlightType, StrokeType } from '../db/prisma';
 import { withErrorBoundaryCustom } from '../utils/error';
 import { API_HOST, queryParse, sendRequest } from '../utils/http';
 
@@ -81,6 +81,7 @@ const PDF: React.FC<PDFProps> = ({
 }) => {
   // const [url, setUrl] = useState<string>(initialUrl);
   const [highlights, setHighlights] = useState<HighlightType[]>([]);
+  const [strokes, setStrokes] = useState<StrokeType[]>([]);
   const [scrollViewerTo, setScrollViewerTo] = useState(
     () => (highlight: any) => {}
   );
@@ -125,9 +126,30 @@ const PDF: React.FC<PDFProps> = ({
     }
   }, [setHighlights, url, authorId]);
 
+  const getStrokes = useCallback(() => {
+    if (href.startsWith(API_HOST)) {
+      return sendRequest<StrokeType[]>(
+        `${API_HOST}/api/strokes?${queryParse({ url, authorId })}`,
+        {
+          method: 'GET',
+        }
+      ).then((json) => {
+        setStrokes(json);
+      });
+    } else {
+      chrome.runtime.sendMessage(
+        { action: 'GET_STROKES', url, authorId },
+        function (result: StrokeType[]) {
+          setStrokes(result);
+        }
+      );
+    }
+  }, [setStrokes, url, authorId]);
+
   useEffect(() => {
     getHighlights();
-  }, [getHighlights]);
+    getStrokes();
+  }, [getHighlights, getStrokes]);
 
   const updateHighlight = useCallback(
     (highlightId: string, position: object, content: object) => {
@@ -302,6 +324,43 @@ const PDF: React.FC<PDFProps> = ({
       [updateHighlight, deleteHighlight, readOnly]
     );
 
+  const onStrokeEnd: PdfHighlighterProps['onStrokeEnd'] = useCallback(
+    (payload) => {
+      if (href.startsWith(API_HOST)) {
+        sendRequest(`${API_HOST}/api/strokes`, {
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json; charset=UTF-8',
+          },
+          body: JSON.stringify([
+            {
+              ...payload,
+              url,
+            },
+          ]),
+        }).then(async () => {
+          await getStrokes();
+        });
+      } else {
+        chrome.runtime.sendMessage(
+          {
+            action: 'CREATE_STROKE',
+            body: JSON.stringify([
+              {
+                ...payload,
+                url,
+              },
+            ]),
+          },
+          function () {
+            getStrokes();
+          }
+        );
+      }
+    },
+    [authorId, getStrokes, url]
+  );
+
   return (
     <div
       className="PDF__container"
@@ -336,6 +395,8 @@ const PDF: React.FC<PDFProps> = ({
               onSelectionFinished={onSelectionFinished}
               highlightTransform={highlightTransform}
               highlights={pdfDocument ? highlights : []}
+              strokes={strokes}
+              onStrokeEnd={onStrokeEnd}
             />
           ) : (
             <></>

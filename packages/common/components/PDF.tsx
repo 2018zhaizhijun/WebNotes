@@ -146,6 +146,29 @@ const PDF: React.FC<PDFProps> = ({
     }
   }, [setStrokes, url, authorId]);
 
+  const deleteStroke = useCallback(
+    (strokeId: string) => {
+      if (href.startsWith(API_HOST)) {
+        sendRequest(`${API_HOST}/api/strokes/${strokeId}`, {
+          method: 'DELETE',
+        }).then(async () => {
+          await getStrokes();
+        });
+      } else {
+        chrome.runtime.sendMessage(
+          {
+            action: 'DELETE_STROKE',
+            strokeId,
+          },
+          () => {
+            getStrokes();
+          }
+        );
+      }
+    },
+    [getStrokes]
+  );
+
   useEffect(() => {
     getHighlights();
     getStrokes();
@@ -397,6 +420,7 @@ const PDF: React.FC<PDFProps> = ({
               highlights={pdfDocument ? highlights : []}
               strokes={strokes}
               onStrokeEnd={onStrokeEnd}
+              deleteStroke={deleteStroke}
             />
           ) : (
             <></>

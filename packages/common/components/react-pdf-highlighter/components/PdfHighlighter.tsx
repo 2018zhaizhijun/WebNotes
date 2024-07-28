@@ -16,6 +16,7 @@ import {
 } from 'pdfjs-dist/legacy/web/pdf_viewer';
 import React, { PointerEventHandler, PureComponent, RefObject } from 'react';
 import { Root, createRoot } from 'react-dom/client';
+import { EditMode } from '../lib/constants';
 import {
   scaledCoordToCtx,
   scaledToViewport,
@@ -50,14 +51,11 @@ import type {
 import { HighlightLayer } from './HighlightLayer';
 import MouseSelection from './MouseSelection';
 import MouseStroking from './MouseStroking';
+import { StrokeLayer } from './StrokeLayer';
 import TipContainer from './TipContainer';
 import ToolBar from './ToolBar';
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
-
-export const EditMode = {
-  STROKING: 'stroking',
-};
 
 interface State<T_HT> {
   // ghostHighlight有什么作用？
@@ -109,6 +107,7 @@ interface Props<T_HT> {
 
   strokes: Array<StrokeType>;
   onStrokeEnd: (payload: Partial<StrokeType>) => void;
+  deleteStroke: (id: string) => void;
 }
 
 const EMPTY_ID = 'empty-id';
@@ -151,7 +150,10 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     [page: number]: { reactRoot: Root; container: Element };
   } = {};
   strokeRoots: {
-    [page: number]: { canvas: HTMLCanvasElement; container: Element };
+    [page: number]: {
+      reactRoot: Root;
+      container: Element;
+    };
   } = {};
   unsubscribe = () => {};
 
@@ -245,6 +247,19 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     return findOrCreateContainerLayer(
       textLayer.textLayerDiv,
       'PdfHighlighter__highlight-layer'
+    );
+  }
+
+  findOrCreateStrokeLayer(page: number) {
+    const { annotationLayer } = this.viewer.getPageView(page - 1) || {};
+
+    if (!annotationLayer) {
+      return null;
+    }
+
+    return findOrCreateContainerLayer(
+      annotationLayer.pageDiv,
+      'PdfHighlighter__stroke-layer'
     );
   }
 
@@ -647,7 +662,9 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
           onColorChange={this.onColorChange}
           onStrokeWidthChange={this.onStrokeWidthChange}
           setActivated={(mode: string) => {
-            this.setState({ activated: mode });
+            this.setState({ activated: mode }, () => {
+              this.renderStrokeLayers();
+            });
           }}
         />
         <div
@@ -816,53 +833,34 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
       /** Need to check if container is still attached to the DOM as PDF.js can unload pages. */
       if (strokeRoot && strokeRoot.container.isConnected) {
-        this.renderStrokeLayer(strokeRoot.canvas, pageStrokes);
+        this.renderStrokeLayer(strokeRoot.reactRoot, pageStrokes, pageNumber);
       } else {
-        const strokeLayer = this.findOrCreateHighlightLayer(pageNumber);
+        const strokeLayer = this.findOrCreateStrokeLayer(pageNumber);
         if (strokeLayer) {
-          const canvas = document.getElementsByTagName('canvas')[
-            pageNumber - 1
-          ] as HTMLCanvasElement;
+          const reactRoot = createRoot(strokeLayer);
           this.strokeRoots[pageNumber] = {
-            canvas,
+            reactRoot,
             container: strokeLayer,
           };
-          this.renderStrokeLayer(canvas, pageStrokes);
+          this.renderStrokeLayer(reactRoot, pageStrokes, pageNumber);
         }
       }
     }
   }
 
   private renderStrokeLayer(
-    canvas: HTMLCanvasElement,
-    pageStrokes: Array<StrokeType>
+    root: Root,
+    pageStrokes: Array<StrokeType>,
+    pageNumber: number
   ) {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    pageStrokes.forEach((stroke) => {
-      const { color, strokeWidth } = stroke;
-      const path = this.scaledStrokePositionToViewport(
-        stroke.position,
-        canvas
-      ).path;
-
-      ctx.strokeStyle = color || 'black';
-      ctx.lineWidth = strokeWidth;
-
-      ctx.beginPath();
-      ctx.moveTo(path[0].x, path[0].y);
-
-      for (let i = 1; i < path.length; i++) {
-        ctx.lineTo(path[i].x, path[i].y);
-      }
-
-      ctx.stroke();
-    });
+    root.render(
+      <StrokeLayer
+        pageNumber={pageNumber}
+        activated={this.state.activated}
+        viewer={this.viewer}
+        pageStrokes={pageStrokes}
+        deleteStroke={this.props.deleteStroke}
+      />
+    );
   }
 }

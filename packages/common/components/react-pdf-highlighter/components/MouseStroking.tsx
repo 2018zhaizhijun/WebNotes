@@ -35,7 +35,11 @@ class MouseSelection extends Component<Props, State> {
   UNSAFE_componentWillReceiveProps(nextProps: Readonly<Props>): void {
     const { color, strokeWidth } = nextProps;
 
-    const canvasCollect = Array.from(document.getElementsByTagName('canvas'));
+    const canvasCollect = Array.from(
+      document.getElementsByClassName(
+        'stroke__canvas'
+      ) as HTMLCollectionOf<HTMLCanvasElement>
+    );
     canvasCollect.forEach((canvas) => {
       const ctx = canvas.getContext('2d');
       if (ctx) {
@@ -59,9 +63,13 @@ class MouseSelection extends Component<Props, State> {
 
     const { color, strokeWidth } = this.props;
 
-    const canvasCollect = Array.from(document.getElementsByTagName('canvas'));
+    const canvasCollect = Array.from(
+      document.getElementsByClassName(
+        'stroke__canvas'
+      ) as HTMLCollectionOf<HTMLCanvasElement>
+    );
     const ctxCollect = canvasCollect.map((canvas) => {
-      canvas.style.zIndex = '1';
+      canvas.style.zIndex = '2';
 
       const ctx = canvas.getContext('2d');
       if (ctx) {
@@ -92,10 +100,10 @@ class MouseSelection extends Component<Props, State> {
 
       // onStrokeStart && onStrokeStart();
 
-      const { width, height, clientWidth, clientHeight } = ctx.canvas;
-      const scaleToCtx = (x: number, y: number): [number, number] => {
-        return [(x * width) / clientWidth, (y * height) / clientHeight];
-      };
+      //   const { width, height, clientWidth, clientHeight } = ctx.canvas;
+      //   const scaleToCtx = (x: number, y: number): [number, number] => {
+      //     return [(x * width) / clientWidth, (y * height) / clientHeight];
+      //   };
 
       this.setState({
         // drawing: true,
@@ -103,7 +111,8 @@ class MouseSelection extends Component<Props, State> {
       });
 
       ctx.beginPath();
-      ctx.moveTo(...scaleToCtx(event.offsetX, event.offsetY));
+      //   ctx.moveTo(...scaleToCtx(event.offsetX, event.offsetY));
+      ctx.moveTo(event.offsetX, event.offsetY);
 
       const onMouseUp = (event: MouseEvent): void => {
         // emulate listen once
@@ -145,7 +154,8 @@ class MouseSelection extends Component<Props, State> {
           });
         }
 
-        ctx.lineTo(...scaleToCtx(event.offsetX, event.offsetY));
+        // ctx.lineTo(...scaleToCtx(event.offsetX, event.offsetY));
+        ctx.lineTo(event.offsetX, event.offsetY);
         ctx.stroke();
       };
 
@@ -165,9 +175,14 @@ class MouseSelection extends Component<Props, State> {
     const container = this.root?.parentElement;
     container?.removeEventListener('mousedown', this.state.onMouseDown);
 
-    const canvasCollect = Array.from(document.getElementsByTagName('canvas'));
+    const canvasCollect = Array.from(
+      document.getElementsByClassName(
+        'stroke__canvas'
+      ) as HTMLCollectionOf<HTMLCanvasElement>
+    );
     canvasCollect.forEach((canvas) => {
       canvas.style.zIndex = '0';
+      canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
     });
   }
 

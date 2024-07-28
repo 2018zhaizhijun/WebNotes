@@ -105,3 +105,19 @@ export const scaledCoordToCtx = (
 
   return coords;
 };
+
+export const scaledCoordToSvg = (
+  scaled: ScaledPath,
+  viewport: Viewport
+): Array<Coords> => {
+  const { width: clientWidth, height: clientHeight } = viewport;
+
+  const coords = scaled.coords.map((coord) => {
+    return {
+      x: (clientWidth * coord.x) / scaled.width,
+      y: (clientHeight * coord.y) / scaled.height,
+    };
+  });
+
+  return coords;
+};

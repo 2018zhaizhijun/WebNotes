@@ -1,4 +1,4 @@
-import { HighlightType } from 'common/db/prisma';
+import { HighlightType, StrokeType } from 'common/db/prisma';
 import { FavouriteWebsite, Website } from 'common/db/types';
 import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
 import { Session } from 'next-auth';
@@ -147,6 +147,37 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
         method: 'DELETE',
       }
     ).then((res) => {
+      onSuccess(res);
+    });
+    return true;
+  } else if (request.action === 'GET_STROKES') {
+    sendRequest<StrokeType[]>(
+      `${API_HOST}/api/strokes?${queryParse({
+        url: request.url,
+        authorId: request.authorId,
+      })}`,
+      {
+        method: 'GET',
+      }
+    ).then((json) => {
+      onSuccess(json);
+    });
+    return true;
+  } else if (request.action === 'CREATE_STROKE') {
+    sendRequest(`${API_HOST}/api/strokes`, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: request.body,
+    }).then((res) => {
+      onSuccess(res);
+    });
+    return true;
+  } else if (request.action === 'DELETE_STROKE') {
+    sendRequest(`${API_HOST}/api/strokes/${request.strokeId}`, {
+      method: 'DELETE',
+    }).then((res) => {
       onSuccess(res);
     });
     return true;

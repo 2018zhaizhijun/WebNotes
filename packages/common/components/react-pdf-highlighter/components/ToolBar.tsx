@@ -5,11 +5,8 @@ import './ToolBar.css';
 
 import { ColorPicker, Slider, Tooltip } from 'antd';
 import { Color } from 'antd/es/color-picker/color';
+import { EditMode } from '../lib/constants';
 import { getPopupContainer, presets } from '../lib/utils';
-
-export const EditMode = {
-  STROKING: 'stroking',
-};
 
 interface ToolBarProps {
   color: string;
@@ -20,14 +17,14 @@ interface ToolBarProps {
   setActivated: (mode: string) => void;
 }
 
-export function ToolBar({
+const ToolBar: React.FC<ToolBarProps> = ({
   color,
   strokeWidth,
   activated,
   onColorChange,
   onStrokeWidthChange,
   setActivated,
-}: ToolBarProps) {
+}) => {
   const draw = useCallback((color: string, strokeWidth: number) => {
     const canvas: HTMLCanvasElement = document.getElementById(
       'tool_bar_canvas'
@@ -109,8 +106,35 @@ export function ToolBar({
           </Tooltip>
         </div>
       </div>
+      <div
+        className={`flex h-full flex-dr ${
+          activated === EditMode.ERASING ? 'active' : ''
+        }`}
+      >
+        <div
+          className="PdfHighlighter__toolbar__item"
+          onClick={() =>
+            setActivated(activated === EditMode.ERASING ? '' : EditMode.ERASING)
+          }
+        >
+          <svg
+            viewBox="0 0 1024 1024"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            p-id="2600"
+            width="20"
+            height="20"
+          >
+            <path
+              d="M667.257905 139.873524l3.85219 3.632762 252.903619 254.537143a73.142857 73.142857 0 0 1 0 103.107047L604.501333 822.686476H828.952381v73.142857H266.532571l-172.129523-173.226666a73.142857 73.142857 0 0 1 0-103.131429L567.344762 143.530667a73.142857 73.142857 0 0 1 99.913143-3.632762zM227.181714 589.604571L146.285714 671.036952l150.674286 151.649524h163.303619l-233.081905-233.081905zM619.227429 195.047619L278.747429 537.721905l253.70819 253.70819 339.675429-341.820952L619.227429 195.047619z"
+              p-id="2601"
+            ></path>
+          </svg>
+          擦除
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default ToolBar;

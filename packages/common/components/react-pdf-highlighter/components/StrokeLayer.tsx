@@ -43,7 +43,10 @@ export const StrokeLayer: React.FC<StrokeLayerProps> = ({
       <svg
         width={viewport.width}
         height={viewport.height}
-        style={{ position: 'absolute', zIndex: 1 }}
+        style={{
+          position: 'absolute',
+          zIndex: activated === EditMode.ERASING ? 1 : 0,
+        }}
       >
         {pageStrokes.map((stroke) => {
           const path = scaledCoordToSvg(stroke.position.path, viewport);

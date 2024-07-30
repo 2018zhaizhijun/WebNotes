@@ -7,8 +7,22 @@
 
 .PdfHighlighter__highlight-layer {
   position: absolute;
-  z-index: 3;
+  z-index: 0;
   left: 0;
+  top: 0;
+  mix-blend-mode: multiply;
+}
+
+.PdfHighlighter__highlight-layer-events {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+
+  .Highlight__part,
+  .AreaHighlight__part {
+    background: transparent !important;
+  }
 }
 
 .PdfHighlighter__tip-container {
@@ -37,7 +51,8 @@
 
 .PdfHighlighter__stroke-layer {
   position: absolute;
-  z-index: 1;
+  /* 父元素不设置z-index，子元素就可以用自己的z-index来与父元素的其他同级元素对比，否则全部都以父元素的z-index来对比 */
+  /* z-index: 0; */
   left: 0;
   top: 0;
 }

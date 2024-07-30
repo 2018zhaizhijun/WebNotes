@@ -65,6 +65,10 @@ export interface ViewportHighlight extends HighlightContent, HighlightComment {
   position: Position;
 }
 
+export interface IViewportHighlight extends ViewportHighlight {
+  id: string | number;
+}
+
 export interface Viewport {
   convertToPdfPoint: (x: number, y: number) => Array<number>;
   convertToViewportPoint: (

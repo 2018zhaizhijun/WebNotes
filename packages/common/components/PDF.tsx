@@ -297,19 +297,38 @@ const PDF: React.FC<PDFProps> = ({
         hideTip,
         viewportToScaled,
         screenshot,
-        isScrolledTo
+        isScrolledTo,
+        isEventLayer
       ) => {
         const isTextHighlight = !(highlight.content && highlight.content.image);
 
+        if (!isEventLayer) {
+          return isTextHighlight ? (
+            <Highlight
+              key={highlight.id}
+              isScrolledTo={isScrolledTo}
+              position={highlight.position}
+              backgroundColor={highlight.backgroundColor || undefined}
+            />
+          ) : (
+            <AreaHighlight
+              key={highlight.id}
+              isScrolledTo={isScrolledTo}
+              highlight={highlight}
+              isEventLayer={false}
+            />
+          );
+        }
+
         const component = isTextHighlight ? (
           <Highlight
-            isScrolledTo={isScrolledTo}
+            isScrolledTo={false}
             position={highlight.position}
             backgroundColor={highlight.backgroundColor || undefined}
           />
         ) : (
           <AreaHighlight
-            isScrolledTo={isScrolledTo}
+            isScrolledTo={false}
             highlight={highlight}
             onChange={(boundingRect) => {
               updateHighlight(
@@ -318,6 +337,7 @@ const PDF: React.FC<PDFProps> = ({
                 { image: screenshot(boundingRect) }
               );
             }}
+            isEventLayer={true}
           />
         );
 
@@ -339,7 +359,7 @@ const PDF: React.FC<PDFProps> = ({
               setTip(highlight, () => popupContent)
             }
             onMouseOut={hideTip}
-            key={index}
+            key={highlight.id}
             children={component}
           />
         );

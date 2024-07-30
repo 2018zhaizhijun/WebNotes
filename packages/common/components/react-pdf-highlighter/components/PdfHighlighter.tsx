@@ -90,7 +90,8 @@ interface Props<T_HT> {
     hideTip: () => void,
     viewportToScaled: (rect: LTWHP) => Scaled,
     screenshot: (position: LTWH) => string,
-    isScrolledTo: boolean
+    isScrolledTo: boolean,
+    isEventLayer: boolean
   ) => JSX.Element;
   highlights: Array<T_HT>;
   onScrollChange: () => void;
@@ -147,7 +148,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   containerNode?: HTMLDivElement | null = null;
   containerNodeRef: RefObject<HTMLDivElement>;
   highlightRoots: {
-    [page: number]: { reactRoot: Root; container: Element };
+    [page: number]: { reactRoot: Root[]; container: Element[] };
   } = {};
   strokeRoots: {
     [page: number]: {
@@ -237,30 +238,14 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     this.unsubscribe();
   }
 
-  findOrCreateHighlightLayer(page: number) {
-    const { textLayer } = this.viewer.getPageView(page - 1) || {};
-
-    if (!textLayer) {
-      return null;
-    }
-
-    return findOrCreateContainerLayer(
-      textLayer.textLayerDiv,
-      'PdfHighlighter__highlight-layer'
-    );
-  }
-
-  findOrCreateStrokeLayer(page: number) {
+  findOrCreateHighlightLayer(page: number, className: string) {
     const { annotationLayer } = this.viewer.getPageView(page - 1) || {};
 
     if (!annotationLayer) {
       return null;
     }
 
-    return findOrCreateContainerLayer(
-      annotationLayer.pageDiv,
-      'PdfHighlighter__stroke-layer'
-    );
+    return findOrCreateContainerLayer(annotationLayer.pageDiv, className);
   }
 
   groupHighlightsByPage(highlights: Array<T_HT>): {
@@ -787,23 +772,39 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
       const highlightRoot = this.highlightRoots[pageNumber];
       /** Need to check if container is still attached to the DOM as PDF.js can unload pages. */
-      if (highlightRoot && highlightRoot.container.isConnected) {
-        this.renderHighlightLayer(highlightRoot.reactRoot, pageNumber);
+      if (highlightRoot && highlightRoot.container[0].isConnected) {
+        this.renderHighlightLayer(highlightRoot.reactRoot[0], pageNumber);
+        this.renderHighlightLayer(highlightRoot.reactRoot[1], pageNumber, true);
       } else {
-        const highlightLayer = this.findOrCreateHighlightLayer(pageNumber);
-        if (highlightLayer) {
-          const reactRoot = createRoot(highlightLayer);
+        // highlight渲染层，位于stroke层之下
+        const highlightLayer = this.findOrCreateHighlightLayer(
+          pageNumber,
+          'PdfHighlighter__highlight-layer'
+        );
+        // highlight事件响应层，位于stroke层之上，元素透明
+        const highlightLayer_events = this.findOrCreateHighlightLayer(
+          pageNumber,
+          'PdfHighlighter__highlight-layer-events'
+        );
+        if (highlightLayer && highlightLayer_events) {
+          const reactRoot = createRoot(highlightLayer),
+            reactRoot_events = createRoot(highlightLayer_events);
           this.highlightRoots[pageNumber] = {
-            reactRoot,
-            container: highlightLayer,
+            reactRoot: [reactRoot, reactRoot_events],
+            container: [highlightLayer, highlightLayer_events],
           };
           this.renderHighlightLayer(reactRoot, pageNumber);
+          this.renderHighlightLayer(reactRoot_events, pageNumber, true);
         }
       }
     }
   }
 
-  private renderHighlightLayer(root: Root, pageNumber: number) {
+  private renderHighlightLayer(
+    root: Root,
+    pageNumber: number,
+    isEventLayer: boolean = false
+  ) {
     const { highlightTransform, highlights } = this.props;
     const { tip, scrolledToHighlightId } = this.state;
     root.render(
@@ -819,6 +820,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         screenshot={this.screenshot.bind(this)}
         showTip={this.showTip.bind(this)}
         setState={this.setState.bind(this)}
+        isEventLayer={isEventLayer}
       />
     );
   }
@@ -835,7 +837,10 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
       if (strokeRoot && strokeRoot.container.isConnected) {
         this.renderStrokeLayer(strokeRoot.reactRoot, pageStrokes, pageNumber);
       } else {
-        const strokeLayer = this.findOrCreateStrokeLayer(pageNumber);
+        const strokeLayer = this.findOrCreateHighlightLayer(
+          pageNumber,
+          'PdfHighlighter__stroke-layer'
+        );
         if (strokeLayer) {
           const reactRoot = createRoot(strokeLayer);
           this.strokeRoots[pageNumber] = {

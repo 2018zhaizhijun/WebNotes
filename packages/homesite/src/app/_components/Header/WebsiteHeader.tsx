@@ -5,7 +5,7 @@ import FavouriteForm, {
 import FavouriteIcon from 'common/components/FavouriteIcon';
 import { FavouriteWebsite, Website } from 'common/db/types';
 import { withErrorBoundaryCustom } from 'common/utils/error';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchComp from '../SearchComp';
 import UserAct from '../UserAct';
@@ -24,7 +24,7 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
 
   const getFavouriteInfo = useCallback(() => {
     sendRequest<FavouriteWebsite[]>(
-      `${API_HOST}/api/favourite/websites?${queryParse({ url })}`,
+      `/api/favourite/websites?${queryParse({ url })}`,
       {
         method: 'GET',
       }
@@ -37,13 +37,13 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
 
   const postFavouriteInfo = useCallback(
     (websiteRename: string, tag: string) => {
-      sendRequest(`${API_HOST}/api/favourite/websites`, {
+      sendRequest(`/api/favourite/websites`, {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           websiteUrl: url,
           websiteRename,
           tag,
-        }),
+        },
       }).then(() => {
         getFavouriteInfo();
       });
@@ -53,12 +53,12 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
 
   const updateFavouriteInfo = useCallback(
     (websiteRename: string, tag: string) => {
-      sendRequest(`${API_HOST}/api/favourite/websites?${queryParse({ url })}`, {
+      sendRequest(`/api/favourite/websites?${queryParse({ url })}`, {
         method: 'PUT',
-        body: JSON.stringify({
+        body: {
           websiteRename,
           tag,
-        }),
+        },
       }).then(() => {
         getFavouriteInfo();
       });
@@ -67,7 +67,7 @@ const WebsiteHeader: React.FC<WebsiteHeaderProps> = ({ websiteInfo }) => {
   );
 
   const deleteFavouriteInfo = useCallback(() => {
-    sendRequest(`${API_HOST}/api/favourite/websites?${queryParse({ url })}`, {
+    sendRequest(`/api/favourite/websites?${queryParse({ url })}`, {
       method: 'DELETE',
     }).then(() => {
       setFavouriteInfo(null);

@@ -5,7 +5,7 @@ import { SimplifiedUser } from 'db/prisma';
 import { Session } from 'next-auth';
 import React, { useCallback, useState } from 'react';
 import { withErrorBoundaryCustom } from '../utils/error';
-import { API_HOST, getBase64, queryParse, sendRequest } from '../utils/http';
+import { getBase64, queryParse, sendRequest } from '../utils/http';
 
 interface UserModalProps {
   open: boolean;
@@ -47,7 +47,7 @@ const UserModal: React.FC<UserModalProps> = ({
         callback("User name can only contain letters, numbers, '-' and '_' ");
       }
       sendRequest<SimplifiedUser[]>(
-        `${API_HOST}/api/user?${queryParse({ name: value })}`,
+        `/api/user?${queryParse({ name: value })}`,
         {
           method: 'GET',
         }
@@ -63,15 +63,15 @@ const UserModal: React.FC<UserModalProps> = ({
 
   const updateUserInfo = useCallback(
     async (image: string, name: string, onOk: () => void) => {
-      return sendRequest(`${API_HOST}/api/user`, {
+      return sendRequest(`/api/user`, {
         method: 'PUT',
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
         },
-        body: JSON.stringify({
+        body: {
           image,
           name,
-        }),
+        },
       }).then(() => {
         onOk?.();
       });

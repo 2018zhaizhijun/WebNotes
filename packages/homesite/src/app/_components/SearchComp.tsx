@@ -15,7 +15,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import { SimplifiedUser } from 'common/db/prisma';
 import { Website } from 'common/db/types';
 import { withErrorBoundaryCustom } from 'common/utils/error';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import React, { useCallback, useMemo, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import './SearchComp.css';
@@ -52,7 +52,7 @@ const SearchComp: React.FC = () => {
       if (checkedValues.includes(SearchSource.USER)) {
         promises.push(
           sendRequest<SimplifiedUser[]>(
-            `${API_HOST}/api/search/authors?${queryParse({ regexp: value })}`,
+            `/api/search/authors?${queryParse({ regexp: value })}`,
             {
               method: 'GET',
             }
@@ -68,7 +68,7 @@ const SearchComp: React.FC = () => {
             url_result: Website[];
             keyword_result: Website[];
           }>(
-            `${API_HOST}/api/search/websites?${queryParse({
+            `/api/search/websites?${queryParse({
               url_regexp: includes_url ? value : undefined,
               keyword_regexp: includes_keyword ? value : undefined,
             })}`,
@@ -110,7 +110,7 @@ const SearchComp: React.FC = () => {
       url_result: Website[];
       keyword_result: Website[];
     }>(
-      `${API_HOST}/api/search/websites?${queryParse({
+      `/api/search/websites?${queryParse({
         keyword_regexp: input,
         offset: String(searchResult.keyword_result?.length || 0),
       })}`,

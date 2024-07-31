@@ -2,7 +2,7 @@
 
 import WebsiteHome from '@/_components/Home/WebsiteHome';
 import { Website } from 'common/db/types';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import { useCallback, useEffect, useState } from 'react';
 
 function WebsiteHomePage({ params }: { params: { id: number } }) {
@@ -10,7 +10,7 @@ function WebsiteHomePage({ params }: { params: { id: number } }) {
 
   const getWebsiteInfo = useCallback(() => {
     return sendRequest<Website[]>(
-      `${API_HOST}/api/website?${queryParse({ id: String(params.id) })}`,
+      `/api/website?${queryParse({ id: String(params.id) })}`,
       {
         method: 'GET',
       }

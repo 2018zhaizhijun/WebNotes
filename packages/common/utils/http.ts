@@ -3,6 +3,21 @@ import { RcFile } from 'antd/es/upload';
 
 export const API_HOST = 'https://localhost:4000';
 
+const throttleApis: { [k: string]: { data: object[]; delay: boolean } } = {
+  'POST:/api/highlights': {
+    data: [],
+    delay: false,
+  },
+  'POST:/api/strokes': {
+    data: [],
+    delay: false,
+  },
+  'DELETE:/api/strokes': {
+    data: [],
+    delay: false,
+  },
+};
+
 export function queryParse(query: { [k: string]: string | undefined }): string {
   let queryText = '';
 
@@ -49,10 +64,36 @@ async function handleResponse(response: Response) {
 
 export async function sendRequest<T>(
   api: string,
-  params: object
+  params: { [k: string]: any }
   // onSuccess: (json: Object) => void,
 ): Promise<T> {
-  return fetch(api, params)
+  let req_api = api,
+    data = params.body,
+    method = params.method!.toUpperCase();
+  if (method === 'DELETE') {
+    const idx = api.lastIndexOf('/');
+    req_api = api.slice(0, idx);
+    data = [api.slice(idx + 1)];
+  }
+
+  let uri = method + ':' + req_api,
+    cache = throttleApis[uri],
+    body: any = params.body;
+  if (cache) {
+    if (cache.delay) {
+      throttleApis[uri].data = cache.data.concat(data || []);
+      return new Promise(() => {});
+    } else {
+      body = cache.data.concat(data || []);
+      throttleApis[uri].data = [];
+      throttleApis[uri].delay = true;
+      setTimeout(() => {
+        throttleApis[uri].delay = false;
+      }, 1000);
+    }
+  }
+
+  return fetch(API_HOST + req_api, { ...params, body: JSON.stringify(body) })
     .then(handleResponse)
     .catch((error) => {
       console.error(`Request error

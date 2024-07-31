@@ -5,7 +5,7 @@ import FavouriteIcon from 'common/components/FavouriteIcon';
 import PDF from 'common/components/PDF';
 import { HighlightType, SimplifiedUser } from 'common/db/prisma';
 import { Website } from 'common/db/types';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import AuthorHeader from '../Header/AuthorHeader';
@@ -33,7 +33,7 @@ const AuthorHome: React.FC<AuthorHomeProps> = ({ authorInfo }) => {
 
   const getNotedWebsites = useCallback(() => {
     return sendRequest<NotedWebsitesType>(
-      `${API_HOST}/api/query/websites?${queryParse({
+      `/api/query/websites?${queryParse({
         authorId: authorInfo.id,
       })}`,
       {

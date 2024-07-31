@@ -109,7 +109,7 @@ const PDF: React.FC<PDFProps> = ({
   const getHighlights = useCallback(() => {
     if (href.startsWith(API_HOST)) {
       return sendRequest<HighlightType[]>(
-        `${API_HOST}/api/highlights?${queryParse({ url, authorId })}`,
+        `/api/highlights?${queryParse({ url, authorId })}`,
         {
           method: 'GET',
         }
@@ -129,7 +129,7 @@ const PDF: React.FC<PDFProps> = ({
   const getStrokes = useCallback(() => {
     if (href.startsWith(API_HOST)) {
       return sendRequest<StrokeType[]>(
-        `${API_HOST}/api/strokes?${queryParse({ url, authorId })}`,
+        `/api/strokes?${queryParse({ url, authorId })}`,
         {
           method: 'GET',
         }
@@ -149,7 +149,7 @@ const PDF: React.FC<PDFProps> = ({
   const deleteStroke = useCallback(
     (strokeId: string) => {
       if (href.startsWith(API_HOST)) {
-        sendRequest(`${API_HOST}/api/strokes/${strokeId}`, {
+        sendRequest(`/api/strokes/${strokeId}`, {
           method: 'DELETE',
         }).then(async () => {
           await getStrokes();
@@ -181,15 +181,15 @@ const PDF: React.FC<PDFProps> = ({
       });
 
       if (href.startsWith(API_HOST)) {
-        sendRequest(`${API_HOST}/api/highlights/${highlightId}`, {
+        sendRequest(`/api/highlights/${highlightId}`, {
           method: 'PUT',
           headers: {
             'Content-type': 'application/json; charset=UTF-8',
           },
-          body: JSON.stringify({
+          body: {
             position: { ...original?.position, ...position },
             content: { ...original?.content, ...content },
-          }),
+          },
         }).then(async () => {
           await getHighlights();
         });
@@ -198,10 +198,10 @@ const PDF: React.FC<PDFProps> = ({
           {
             action: 'UPDATE_HIGHLIGHT',
             highlightId,
-            body: JSON.stringify({
+            body: {
               position: { ...original?.position, ...position },
               content: { ...original?.content, ...content },
-            }),
+            },
           },
           function () {
             getHighlights();
@@ -215,7 +215,7 @@ const PDF: React.FC<PDFProps> = ({
   const deleteHighlight = useCallback(
     (highlightId: string) => {
       if (href.startsWith(API_HOST)) {
-        sendRequest(`${API_HOST}/api/highlights/${highlightId}`, {
+        sendRequest(`/api/highlights/${highlightId}`, {
           method: 'DELETE',
         }).then(async () => {
           await getHighlights();
@@ -244,12 +244,12 @@ const PDF: React.FC<PDFProps> = ({
               transformSelection();
 
               if (href.startsWith(API_HOST)) {
-                sendRequest(`${API_HOST}/api/highlights`, {
+                sendRequest(`/api/highlights`, {
                   method: 'POST',
                   headers: {
                     'Content-type': 'application/json; charset=UTF-8',
                   },
-                  body: JSON.stringify([
+                  body: [
                     {
                       url,
                       content,
@@ -257,7 +257,7 @@ const PDF: React.FC<PDFProps> = ({
                       comment,
                       backgroundColor: color,
                     },
-                  ]),
+                  ],
                 }).then(async () => {
                   hideTipAndSelection();
                   await getHighlights();
@@ -266,7 +266,7 @@ const PDF: React.FC<PDFProps> = ({
                 chrome.runtime.sendMessage(
                   {
                     action: 'CREATE_HIGHLIGHT',
-                    body: JSON.stringify([
+                    body: [
                       {
                         url,
                         content,
@@ -274,7 +274,7 @@ const PDF: React.FC<PDFProps> = ({
                         comment,
                         backgroundColor: color,
                       },
-                    ]),
+                    ],
                   },
                   function () {
                     hideTipAndSelection();
@@ -307,8 +307,9 @@ const PDF: React.FC<PDFProps> = ({
             <Highlight
               key={highlight.id}
               isScrolledTo={isScrolledTo}
-              position={highlight.position}
+              highlight={highlight}
               backgroundColor={highlight.backgroundColor || undefined}
+              isEventLayer={false}
             />
           ) : (
             <AreaHighlight
@@ -320,11 +321,19 @@ const PDF: React.FC<PDFProps> = ({
           );
         }
 
+        const eventDiv = document.getElementById(
+          `event__highlight__${highlight.id}`
+        );
+        const highlightDiv = document.getElementById(
+          `highlight__${highlight.id}`
+        );
+
         const component = isTextHighlight ? (
           <Highlight
             isScrolledTo={false}
-            position={highlight.position}
+            highlight={highlight}
             backgroundColor={highlight.backgroundColor || undefined}
+            isEventLayer={true}
           />
         ) : (
           <AreaHighlight
@@ -350,7 +359,12 @@ const PDF: React.FC<PDFProps> = ({
                 <HighlightPopup
                   {...highlight}
                   readOnly={readOnly}
-                  deleteHighlight={() => deleteHighlight(String(highlight.id))}
+                  deleteHighlight={() => {
+                    if (eventDiv) eventDiv.style.display = 'none';
+                    if (highlightDiv) highlightDiv.style.display = 'none';
+
+                    deleteHighlight(String(highlight.id));
+                  }}
                   hideTip={hideTip}
                 />
               )
@@ -370,17 +384,17 @@ const PDF: React.FC<PDFProps> = ({
   const onStrokeEnd: PdfHighlighterProps['onStrokeEnd'] = useCallback(
     (payload) => {
       if (href.startsWith(API_HOST)) {
-        sendRequest(`${API_HOST}/api/strokes`, {
+        sendRequest(`/api/strokes`, {
           method: 'POST',
           headers: {
             'Content-type': 'application/json; charset=UTF-8',
           },
-          body: JSON.stringify([
+          body: [
             {
               ...payload,
               url,
             },
-          ]),
+          ],
         }).then(async () => {
           await getStrokes();
         });
@@ -388,12 +402,12 @@ const PDF: React.FC<PDFProps> = ({
         chrome.runtime.sendMessage(
           {
             action: 'CREATE_STROKE',
-            body: JSON.stringify([
+            body: [
               {
                 ...payload,
                 url,
               },
-            ]),
+            ],
           },
           function () {
             getStrokes();

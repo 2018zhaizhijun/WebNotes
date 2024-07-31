@@ -6,7 +6,7 @@ import { Session } from 'next-auth';
 chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
   if (request.action === 'AUTH_CHECK') {
     console.log('running auth check');
-    sendRequest<Session>(`${API_HOST}/api/auth/session`, {
+    sendRequest<Session>(`/api/auth/session`, {
       mode: 'cors',
     }).then((session) => {
       console.log(session);
@@ -37,7 +37,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'GET_HIGHLIGHTS') {
     sendRequest<HighlightType[]>(
-      `${API_HOST}/api/highlights?${queryParse({
+      `/api/highlights?${queryParse({
         url: request.url,
         authorId: request.authorId,
       })}`,
@@ -49,7 +49,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'UPDATE_HIGHLIGHT') {
-    sendRequest(`${API_HOST}/api/highlights/${request.highlightId}`, {
+    sendRequest(`/api/highlights/${request.highlightId}`, {
       method: 'PUT',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -60,7 +60,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'CREATE_HIGHLIGHT') {
-    sendRequest(`${API_HOST}/api/highlights`, {
+    sendRequest(`/api/highlights`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -71,7 +71,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'DELETE_HIGHLIGHT') {
-    sendRequest(`${API_HOST}/api/highlights/${request.highlightId}`, {
+    sendRequest(`/api/highlights/${request.highlightId}`, {
       method: 'DELETE',
     }).then((res) => {
       onSuccess(res);
@@ -79,17 +79,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'GET_WEBSITE_INFO') {
     // 查询Website表中是否有该网站
-    sendRequest<Website[]>(
-      `${API_HOST}/api/website?${queryParse({ url: request.url })}`,
-      {
-        method: 'GET',
-      }
-    ).then((json) => {
+    sendRequest<Website[]>(`/api/website?${queryParse({ url: request.url })}`, {
+      method: 'GET',
+    }).then((json) => {
       onSuccess(json);
     });
     return true;
   } else if (request.action === 'CREATE_WEBSITE_INFO') {
-    sendRequest(`${API_HOST}/api/website`, {
+    sendRequest(`/api/website`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -101,7 +98,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'GET_FAVOURITE_WEBSITE_INFO') {
     sendRequest<FavouriteWebsite[]>(
-      `${API_HOST}/api/favourite/websites?${queryParse({
+      `/api/favourite/websites?${queryParse({
         url: request.url,
       })}`,
       {
@@ -112,7 +109,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'CREATE_FAVOURITE_WEBSITE_INFO') {
-    sendRequest(`${API_HOST}/api/favourite/websites`, {
+    sendRequest(`/api/favourite/websites`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -124,7 +121,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'UPDATE_FAVOURITE_WEBSITE_INFO') {
     sendRequest(
-      `${API_HOST}/api/favourite/websites?${queryParse({
+      `/api/favourite/websites?${queryParse({
         url: request.url,
       })}`,
       {
@@ -140,7 +137,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'DELETE_FAVOURITE_WEBSITE_INFO') {
     sendRequest(
-      `${API_HOST}/api/favourite/websites?${queryParse({
+      `/api/favourite/websites?${queryParse({
         url: request.url,
       })}`,
       {
@@ -152,7 +149,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     return true;
   } else if (request.action === 'GET_STROKES') {
     sendRequest<StrokeType[]>(
-      `${API_HOST}/api/strokes?${queryParse({
+      `/api/strokes?${queryParse({
         url: request.url,
         authorId: request.authorId,
       })}`,
@@ -164,7 +161,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'CREATE_STROKE') {
-    sendRequest(`${API_HOST}/api/strokes`, {
+    sendRequest(`/api/strokes`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
@@ -175,7 +172,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, onSuccess) {
     });
     return true;
   } else if (request.action === 'DELETE_STROKE') {
-    sendRequest(`${API_HOST}/api/strokes/${request.strokeId}`, {
+    sendRequest(`/api/strokes/${request.strokeId}`, {
       method: 'DELETE',
     }).then((res) => {
       onSuccess(res);

@@ -3,7 +3,7 @@ import { ItemType } from 'antd/es/menu/hooks/useItems';
 import PDF from 'common/components/PDF';
 import { HighlightType, SimplifiedUser } from 'common/db/prisma';
 import { Website } from 'common/db/types';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import WebsiteHeader from '../Header/WebsiteHeader';
@@ -23,7 +23,7 @@ const WebsiteHome: React.FC<WebsiteHomeProps> = ({ websiteInfo }) => {
 
   const getNotedAuthors = useCallback(() => {
     return sendRequest<SimplifiedUser[]>(
-      `${API_HOST}/api/query/authors?${queryParse({
+      `/api/query/authors?${queryParse({
         url: websiteInfo.url,
       })}`,
       {

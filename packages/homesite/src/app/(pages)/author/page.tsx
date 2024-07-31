@@ -1,7 +1,7 @@
 'use client';
 
 import { SimplifiedUser } from 'common/db/prisma';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
@@ -12,7 +12,7 @@ function HomePage() {
 
   const getAuthorInfo = useCallback(() => {
     return sendRequest<SimplifiedUser[]>(
-      `${API_HOST}/api/user?${queryParse({ id: session?.user.id })}`,
+      `/api/user?${queryParse({ id: session?.user.id })}`,
       {
         method: 'GET',
       }

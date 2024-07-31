@@ -63,3 +63,28 @@ export const POST = apiHandler(
     payload: joi.array().items(joiStroke),
   }
 );
+
+// 批量删除笔画
+export const DELETE = apiHandler(
+  async (req: NextRequest) => {
+    const request = await req.json();
+    const userId = req.headers.get('userId');
+
+    await db
+      .deleteFrom('Stroke')
+      .where(
+        'id',
+        'in',
+        request.map((id: string) => Number(id))
+      )
+      .where('authorId', '=', userId)
+      .executeTakeFirst();
+
+    return NextResponse.json({});
+  },
+  {
+    params: joi.object({
+      id: joi.string(),
+    }),
+  }
+);

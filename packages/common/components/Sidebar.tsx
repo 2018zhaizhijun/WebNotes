@@ -72,19 +72,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         const params = isCreate
           ? {
               action: 'CREATE_FAVOURITE_WEBSITE_INFO',
-              body: JSON.stringify({
+              body: {
                 websiteUrl: url,
                 websiteRename,
                 tag,
-              }),
+              },
             }
           : {
               action: 'UPDATE_FAVOURITE_WEBSITE_INFO',
               url,
-              body: JSON.stringify({
+              body: {
                 websiteRename,
                 tag,
-              }),
+              },
             };
 
         chrome.runtime.sendMessage(
@@ -136,7 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       chrome.runtime.sendMessage(
         {
           action: 'CREATE_WEBSITE_INFO',
-          body: JSON.stringify({ url, ...pdfInfo }),
+          body: { url, ...pdfInfo },
         },
         function (result) {
           getWebsiteInfo();

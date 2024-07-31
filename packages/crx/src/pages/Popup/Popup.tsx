@@ -1,7 +1,6 @@
 import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
 import { Avatar, Image, Popconfirm } from 'antd';
 import UserModal from 'common/components/UserModal';
-import { API_HOST } from 'common/utils/http';
 import { Session } from 'next-auth';
 import React, { useCallback, useEffect, useState } from 'react';
 import logo from '../../assets/img/logo.svg';
@@ -84,7 +83,7 @@ const Popup: React.FC = () => {
           <button
             onClick={() => {
               chrome.tabs.create({
-                url: `${API_HOST}/login`,
+                url: `/login`,
               });
             }}
           >

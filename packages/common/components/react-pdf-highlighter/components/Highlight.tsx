@@ -1,37 +1,38 @@
 import React, { Component } from 'react';
 
 import '../style/Highlight.css';
-
-import type { LTWHP } from '../types.js';
+import { IViewportHighlight } from '../types';
 
 interface Props {
-  position: {
-    boundingRect: LTWHP;
-    rects: Array<LTWHP>;
-  };
+  highlight: IViewportHighlight;
   onClick?: () => void;
   onMouseOver?: () => void;
   onMouseOut?: () => void;
   deleteHighlight?: (id: string) => void;
   backgroundColor?: string;
   isScrolledTo: boolean;
+  isEventLayer: boolean;
 }
 
 export class Highlight extends Component<Props> {
   render() {
     const {
-      position,
+      highlight,
       onClick,
       onMouseOver,
       onMouseOut,
       backgroundColor = '#ffe28f',
       isScrolledTo,
+      isEventLayer,
     } = this.props;
 
-    const { rects } = position;
+    const { rects } = highlight.position;
 
     return (
       <div
+        id={`${isEventLayer ? 'event__highlight__' : 'highlight__'}${
+          highlight.id
+        }`}
         className={`Highlight ${isScrolledTo ? 'Highlight--scrolledTo' : ''}`}
       >
         <div className="Highlight__parts">

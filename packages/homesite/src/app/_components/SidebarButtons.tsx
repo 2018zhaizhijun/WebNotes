@@ -1,6 +1,6 @@
 import { Button } from 'antd';
 import { HighlightType } from 'common/db/prisma';
-import { API_HOST, sendRequest } from 'common/utils/http';
+import { sendRequest } from 'common/utils/http';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
 
@@ -19,12 +19,12 @@ const SidebarButtons: React.FC<SidebarButtonsProps> = ({
 
   const copyHighlights = useCallback(
     (highlights: HighlightType[]) => {
-      sendRequest(`${API_HOST}/api/highlights`, {
+      sendRequest(`/api/highlights`, {
         method: 'POST',
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
         },
-        body: JSON.stringify(highlights),
+        body: highlights,
       }).then(async () => {
         window.open(websiteUrl, '_blank');
       });

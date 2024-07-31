@@ -3,7 +3,7 @@ import { Avatar, Button, Divider, Drawer, Modal } from 'antd';
 import UserModal from 'common/components/UserModal';
 import { SimplifiedUser } from 'common/db/prisma';
 import { withErrorBoundaryCustom } from 'common/utils/error';
-import { API_HOST, sendRequest } from 'common/utils/http';
+import { sendRequest } from 'common/utils/http';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import './UserAct.css';
@@ -19,7 +19,7 @@ const UserAct: React.FC = () => {
   const [favouriteUsers, setFavouriteUsers] = useState<SimplifiedUser[]>();
 
   const getFavouriteInfo = useCallback(() => {
-    sendRequest<SimplifiedUser[]>(`${API_HOST}/api/query/favouriteAuthors`, {
+    sendRequest<SimplifiedUser[]>(`/api/query/favouriteAuthors`, {
       method: 'GET',
     }).then((json) => {
       setFavouriteUsers(json);

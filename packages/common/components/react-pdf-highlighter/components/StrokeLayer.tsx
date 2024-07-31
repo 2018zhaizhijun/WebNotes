@@ -63,10 +63,13 @@ export const StrokeLayer: React.FC<StrokeLayerProps> = ({
                       event.preventDefault();
                       if (event.buttons !== 1) return;
 
-                      deleteStroke && deleteStroke(String(stroke.id));
-                      if (event.target instanceof SVGPathElement) {
+                      if (
+                        event.target instanceof SVGPathElement ||
+                        event.target instanceof SVGCircleElement
+                      ) {
                         event.target.style.display = 'none';
                       }
+                      deleteStroke && deleteStroke(String(stroke.id));
                     }
               }
             />

@@ -2,7 +2,7 @@ import FavouriteIcon from 'common/components/FavouriteIcon';
 import { SimplifiedUser } from 'common/db/prisma';
 import { FavouriteUser } from 'common/db/types';
 import { withErrorBoundaryCustom } from 'common/utils/error';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import SearchComp from '../SearchComp';
@@ -21,7 +21,7 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
 
   const getFavouriteInfo = useCallback(() => {
     sendRequest<FavouriteUser[]>(
-      `${API_HOST}/api/favourite/users?${queryParse({
+      `/api/favourite/users?${queryParse({
         userId: authorInfo.id,
       })}`,
       {
@@ -35,11 +35,11 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
   }, [authorInfo]);
 
   const postFavouriteInfo = useCallback(() => {
-    sendRequest(`${API_HOST}/api/favourite/users`, {
+    sendRequest(`/api/favourite/users`, {
       method: 'POST',
-      body: JSON.stringify({
+      body: {
         userId: authorInfo.id,
-      }),
+      },
     }).then(() => {
       getFavouriteInfo();
     });
@@ -47,7 +47,7 @@ const AuthorHeader: React.FC<AuthorHeaderProps> = ({ authorInfo }) => {
 
   const deleteFavouriteInfo = useCallback(() => {
     sendRequest(
-      `${API_HOST}/api/favourite/users?${queryParse({
+      `/api/favourite/users?${queryParse({
         userId: authorInfo.id,
       })}`,
       {

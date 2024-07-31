@@ -2,7 +2,7 @@
 
 import AuthorHome from '@/_components/Home/AuthorHome';
 import { SimplifiedUser } from 'common/db/prisma';
-import { API_HOST, queryParse, sendRequest } from 'common/utils/http';
+import { queryParse, sendRequest } from 'common/utils/http';
 import { useCallback, useEffect, useState } from 'react';
 
 function AuthorHomePage({ params }: { params: { name: string } }) {
@@ -10,7 +10,7 @@ function AuthorHomePage({ params }: { params: { name: string } }) {
 
   const getAuthorInfo = useCallback(() => {
     return sendRequest<SimplifiedUser[]>(
-      `${API_HOST}/api/user?${queryParse({ name: params.name })}`,
+      `/api/user?${queryParse({ name: params.name })}`,
       {
         method: 'GET',
       }

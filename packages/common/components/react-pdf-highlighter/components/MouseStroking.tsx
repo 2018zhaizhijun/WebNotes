@@ -74,6 +74,7 @@ class MouseSelection extends Component<Props, State> {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.strokeStyle = color;
+        ctx.fillStyle = color;
         ctx.lineWidth = strokeWidth;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -113,6 +114,8 @@ class MouseSelection extends Component<Props, State> {
       ctx.beginPath();
       //   ctx.moveTo(...scaleToCtx(event.offsetX, event.offsetY));
       ctx.moveTo(event.offsetX, event.offsetY);
+      ctx.arc(event.offsetX, event.offsetY, strokeWidth / 2, 0, 2 * Math.PI);
+      ctx.fill();
 
       const onMouseUp = (event: MouseEvent): void => {
         // emulate listen once

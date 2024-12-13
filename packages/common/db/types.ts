@@ -45,6 +45,11 @@ export type Highlight = {
   privacy: Generated<boolean | null>;
   authorId: string;
 };
+export type PDFVector = {
+  id: Generated<string>;
+  content: string;
+  metadata: unknown;
+};
 export type Session = {
   id: Generated<string>;
   sessionToken: string;
@@ -85,6 +90,7 @@ export type DB = {
   FavouriteUser: FavouriteUser;
   FavouriteWebsite: FavouriteWebsite;
   Highlight: Highlight;
+  pdf_vector: PDFVector;
   Session: Session;
   Stroke: Stroke;
   User: User;

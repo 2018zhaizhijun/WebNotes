@@ -22,6 +22,7 @@ import { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import { HighlightType, StrokeType } from '../db/prisma';
 import { withErrorBoundaryCustom } from '../utils/error';
 import { API_HOST, queryParse, sendRequest } from '../utils/http';
+import Chatbot from './chatbot';
 
 type PdfHighlighterProps = React.ComponentProps<typeof PdfHighlighter>;
 
@@ -461,6 +462,7 @@ const PDF: React.FC<PDFProps> = ({
           )}
         </PdfLoader>
       </div>
+      <Chatbot />
     </div>
   );
 };

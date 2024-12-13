@@ -2,12 +2,6 @@
 //   provider = "prisma-client-js"
 // }
 
-datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
-}
-
 generator kysely {
   provider = "prisma-kysely"
 
@@ -17,6 +11,14 @@ generator kysely {
   fileName     = "types.ts"
   // Optionally generate runtime enums to a separate file
   enumFileName = "enums.ts"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+  extensions = [vector]
 }
 
 model Highlight {
@@ -151,4 +153,14 @@ model VerificationToken {
   // @@map(name: "verificationToken")
 
   @@unique([identifier, token])
+}
+
+model PDFVector {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // text-embedding-3-small 1536; text-embedding-3-large 3072
+  vector     Unsupported("vector(1536)")
+  content    String
+  metadata   Json
+
+  @@map("pdf_vector")
 }

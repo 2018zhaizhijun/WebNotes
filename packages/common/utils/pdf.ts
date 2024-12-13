@@ -1,6 +1,8 @@
+// import { WebPDFLoader } from '@langchain/community/document_loaders/web/pdf';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf';
 import { TextItem } from 'pdfjs-dist/types/src/display/api';
+// import { createPDFAgent } from './agent';
 import { queryParse } from './http';
 
 export const extractInfo = async (pdfDocument: PDFDocumentProxy) => {
@@ -49,7 +51,18 @@ export function getBinaryData(
     method: 'GET',
   })
     .then((response) => response.json())
-    .then((json) => {
+    .then(async (json) => {
+      // const arraybuffer = json['arraybuffer'];
+      // const blob = new Blob([arraybuffer], { type: 'application/pdf' });
+      // const loader = new WebPDFLoader(blob, {
+      //   pdfjs: () =>
+      //     import('pdfjs-dist/legacy/build/pdf.js').then((m) => m.default),
+      // });
+      // const docs = await loader.load();
+      // // console.log(docs.length);
+      // // console.log(docs[0]);
+      // await createPDFAgent(docs);
+      // return getDocument(arraybuffer).promise;
       return getDocument(json['arraybuffer']).promise;
     })
     .then((_pdfDoc) => {

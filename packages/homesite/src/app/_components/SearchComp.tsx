@@ -1,5 +1,6 @@
 import { highlightKeywords } from '@/_lib/utils';
 import { ExportOutlined } from '@ant-design/icons';
+import { Document } from '@langchain/core/documents';
 import {
   Checkbox,
   Collapse,
@@ -27,12 +28,14 @@ enum SearchSource {
   USER = 'User',
   URL = 'Url',
   KEYWORD = 'Keyword',
+  AI = 'AI',
 }
 
 interface SearchResultType {
   author_result?: SimplifiedUser[];
   url_result?: Website[];
   keyword_result?: Website[];
+  ai_result?: Document[];
   keyword_result_total?: number;
 }
 
@@ -76,6 +79,18 @@ const SearchComp: React.FC = () => {
               method: 'GET',
             }
           )
+        );
+      }
+
+      const includes_ai = checkedValues.includes(SearchSource.AI);
+      if (includes_ai) {
+        promises.push(
+          sendRequest<{
+            ai_result: Document[];
+          }>('/api/search/ai', {
+            method: 'POST',
+            body: { query: value },
+          })
         );
       }
 
@@ -197,6 +212,7 @@ const SearchComp: React.FC = () => {
           />
           <Checkbox.Group
             options={[
+              SearchSource.AI,
               SearchSource.USER,
               SearchSource.URL,
               SearchSource.KEYWORD,
@@ -204,6 +220,46 @@ const SearchComp: React.FC = () => {
             onChange={onChange}
           />
         </div>
+
+        {!!searchResult.ai_result?.length && (
+          <>
+            <Divider />
+            <div className="search__ai-result">{SearchSource.AI}</div>
+            <div id="scrollableDiv">
+              <List
+                className="search__ai-result__list"
+                itemLayout="horizontal"
+                dataSource={searchResult.ai_result}
+                renderItem={(item) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      title={
+                        <a href={item.metadata?.url || ''} target="_blank">
+                          {item.metadata?.pdf?.Title ||
+                            item.metadata?.pdf?.info?.Title ||
+                            item.metadata?.pdf?.metadata?._metadata?.[
+                              'dc:title'
+                            ]}
+                        </a>
+                      }
+                      description={
+                        <div
+                          style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            height: '46px',
+                          }}
+                        >
+                          {item.pageContent || item.content}
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            </div>
+          </>
+        )}
 
         {!!searchResult.author_result?.length && (
           <>

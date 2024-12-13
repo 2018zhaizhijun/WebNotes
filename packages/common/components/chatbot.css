@@ -1,0 +1,83 @@
+.chatbot__wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.chatbot__dialog {
+  position: relative;
+  font-size: 0.8rem;
+  width: 350px;
+  height: 600px;
+  bottom: 60px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  transform-origin: bottom right;
+  transition: all 0.3s ease-in-out;
+}
+
+.chatbot__message {
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 80%;
+  word-break: break-word;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    width: 10px;
+    height: 10px;
+    background-color: inherit;
+  }
+}
+
+.chatbot__message a {
+  color: #1677ff;
+  text-decoration: underline;
+}
+
+.chatbot__message__user {
+  background-color: #1890ff;
+  color: white;
+  right: 8px;
+
+  &::after {
+    right: -1px;
+    transform: rotate(70deg);
+  }
+}
+
+.chatbot__message__robot {
+  background-color: #f0f0f0;
+  color: black;
+  left: 8px;
+
+  &::after {
+    left: -1px;
+    transform: rotate(20deg);
+  }
+}
+
+.chatbot__icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  color: #fff;
+}
+
+.chatbot__wrapper:hover .anticon {
+  color: #fff;
+}

@@ -69,7 +69,7 @@ export async function sendRequest<T>(
 ): Promise<T> {
   let req_api = api,
     data = params.body,
-    method = params.method!.toUpperCase();
+    method = params.method?.toUpperCase();
   if (method === 'DELETE') {
     const idx = api.lastIndexOf('/');
     req_api = api.slice(0, idx);
